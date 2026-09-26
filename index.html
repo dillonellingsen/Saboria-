@@ -317,6 +317,11 @@
     .grade-good { color: #2F6B3C; font-weight: 800; }
     .grade-fair { color: #C45C26; font-weight: 800; }
     .grade-bad { color: #9b1c1c; font-weight: 800; }
+    .verdict { margin-top:10px; padding:10px 12px; border-radius:12px; border:1px solid; }
+    .verdict ul { margin:6px 0 0; padding-left:18px; font-size:14px; line-height:1.4; }
+    .v-good { background:#EAF4EC; border-color:#9CC7A6; color:#1E4A28; }
+    .v-fair { background:#FFF4E5; border-color:#F0C98A; color:#6B3E0A; }
+    .v-bad { background:#FDECEC; border-color:#E8A3A3; color:#7A1616; }
     .ring-wrap { width: 92px; height: 92px; position: relative; }
     .ring-wrap b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
     .plan-row { display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); }
@@ -998,6 +1003,11 @@ Object.assign(I.en, {
   cook:"Cook", genWeek:"Generate my week", swap:"Swap", portion:"portion",
   noRecipes:"No recipes fit your filters for this meal yet. Add one by hand.",
   planAuto:"Portions are scaled so each day lands near your target.",
+  per:"per", vGood:"Good fit", vFair:"Okay, watch this", vBad:"Not for you right now",
+  vAllergy:"Contains an allergen you marked:", vNotVegan:"Not vegan.", vNotVeg:"Not vegetarian.",
+  vOver:"You have", vSugar:"of sugar: half or more of the ~25 g a day the WHO suggests.", vSugarDay:"of sugar: more than the WHO suggests for a whole day (~25 g).",
+  vSalt:"of salt: almost a third of the 5 g daily limit.", vKeto:"of carbs: a lot for keto.",
+  vProtein:"of protein.", vFits:"Fits in what you have left today.",
   aiLooking:"Reading your plate…", aiTitle:"What we see", aiConf:"Confidence:", aiLow:"low", aiMed:"medium", aiHigh:"high",
   aiCheck:"This is an estimate from a photo. Fix the grams if they look off; oil and sauces are the usual misses.",
   aiFail:"We couldn’t read the photo. Try again, or search the food by name.",
@@ -1048,6 +1058,11 @@ Object.assign(I.es, {
   cook:"Cocinar", genWeek:"Generar mi semana", swap:"Cambiar", portion:"porción",
   noRecipes:"Todavía no hay recetas que cumplan tus filtros para esta comida. Agrega una a mano.",
   planAuto:"Ajustamos las porciones para que cada día quede cerca de tu meta.",
+  per:"por", vGood:"Te queda bien", vFair:"Se puede, pero ojo", vBad:"Mejor no, por ahora",
+  vAllergy:"Tiene un alérgeno que marcaste:", vNotVegan:"No es vegano.", vNotVeg:"No es vegetariano.",
+  vOver:"Te quedan", vSugar:"de azúcar: la mitad o más de los ~25 g al día que sugiere la OMS.", vSugarDay:"de azúcar: más de lo que la OMS sugiere para todo un día (~25 g).",
+  vSalt:"de sal: casi un tercio del límite de 5 g al día.", vKeto:"de carbohidratos: mucho para keto.",
+  vProtein:"de proteína.", vFits:"Cabe en lo que te queda hoy.",
   aiLooking:"Leyendo tu plato…", aiTitle:"Lo que vemos", aiConf:"Confianza:", aiLow:"baja", aiMed:"media", aiHigh:"alta",
   aiCheck:"Es una estimación con una foto. Corrige los gramos si no cuadran; el aceite y las salsas son lo que más se escapa.",
   aiFail:"No pudimos leer la foto. Intenta de nuevo o busca el alimento por nombre.",
@@ -1544,6 +1559,29 @@ function rateFood(food) {
   if (food.cal <= remain * 0.55) return "fair";
   return "fair";
 }
+// grade plus plain reasons, checked against the user's own profile
+function verdict(food) {
+  const T = t();
+  const out = { grade: rateFood(food), reasons: [] };
+  const bad = msg => { out.grade = "bad"; out.reasons.push({ k:"bad", msg }); };
+  const warn = msg => { if (out.grade === "good") out.grade = "fair"; out.reasons.push({ k:"fair", msg }); };
+  const al = (S.allergies || []).filter(a => a !== "none");
+  const has = food.allergens || ((FOOD_META[food.id] || {}).al) || [];
+  const names = { gluten:T.aGluten, dairy:T.aDairy, egg:T.aEgg, peanut:T.aPeanut, treenut:T.aTreenut, fish:T.aFish, shellfish:T.aShell, soy:T.aSoy };
+  has.filter(a => al.includes(a)).forEach(a => bad(`${T.vAllergy} ${names[a]}.`));
+  const kind = (FOOD_META[food.id] || {}).k;
+  if (S.dietPref === "vegan" && (food.vegan === false || (kind && kind !== "plant"))) bad(T.vNotVegan);
+  if (S.dietPref === "vegetarian" && (food.vegetarian === false || ["meat","fish","shellfish"].includes(kind))) bad(T.vNotVeg);
+  const remain = Math.max(0, targets().cal - usedCals());
+  if (food.cal > remain + 80) bad(`${food.cal} kcal · ${T.vOver} ${remain} kcal.`);
+  if (food.sugar >= 25) bad(`${food.sugar} g ${T.vSugarDay}`);
+  else if (food.sugar >= 12.5) warn(`${food.sugar} g ${T.vSugar}`);
+  if (food.salt >= 1.5) warn(`${food.salt} g ${T.vSalt}`);
+  if (S.macroStyle === "keto" && food.c > 15) warn(`${food.c} g ${T.vKeto}`);
+  if (!out.reasons.length && food.p >= 10) out.reasons.push({ k:"good", msg:`${food.p} g ${T.vProtein}` });
+  if (!out.reasons.length && out.grade === "good") out.reasons.push({ k:"good", msg: T.vFits });
+  return out;
+}
 function allFoods() {
   return FOODS.concat(S.customItems || []);
 }
@@ -1918,7 +1956,7 @@ async function analyzeMealAI(file) {
     const j = await r.json().catch(() => ({ error: "parse" }));
     if (!r.ok || j.error) S.scanErr = t().aiFail;
     else if (!j.is_food || !(j.items || []).length) S.scanErr = t().aiNoFood;
-    else S.aiMeal = { confidence: j.confidence, note: j.note, items: j.items.map(i => ({ ...i, base: { ...i } })) };
+    else S.scrollResult = true, S.aiMeal = { confidence: j.confidence, note: j.note, items: j.items.map(i => ({ ...i, base: { ...i } })) };
   } catch (e) {
     S.scanErr = t().aiFail;
   }
@@ -1928,15 +1966,23 @@ async function analyzeMealAI(file) {
 }
 function offToFood(p, barcode) {
   const n = p.nutriments || {};
-  const cal = Math.round(Number(n["energy-kcal_serving"] || n["energy-kcal_100g"] || n["energy-kcal"] || 0));
-  const prot = Math.round(Number(n.proteins_serving || n.proteins_100g || 0));
-  const carb = Math.round(Number(n.carbohydrates_serving || n.carbohydrates_100g || 0));
-  const fat = Math.round(Number(n.fat_serving || n.fat_100g || 0));
+  // use per-serving numbers only when the package gives them, never mix with per-100 g
+  const per = n["energy-kcal_serving"] != null ? "_serving" : "_100g";
+  const v = k => Number(n[k + per] || 0);
   const name = p.product_name_en || p.product_name || p.generic_name || barcode || "Food";
   const nameEs = p.product_name_es || p.product_name || name;
+  const AL = { "en:milk":"dairy", "en:gluten":"gluten", "en:eggs":"egg", "en:peanuts":"peanut", "en:nuts":"treenut",
+    "en:fish":"fish", "en:crustaceans":"shellfish", "en:molluscs":"shellfish", "en:soybeans":"soy" };
+  const tags = (p.allergens_tags || []).concat(p.traces_tags || []);
+  const analysis = p.ingredients_analysis_tags || [];
   return {
     id: "off-" + (p.code || barcode || name).toString().slice(0,24),
-    en: name, es: nameEs, cal: cal || 0, p: prot, c: carb, f: fat,
+    en: name, es: nameEs, cal: Math.round(v("energy-kcal")), p: Math.round(v("proteins")), c: Math.round(v("carbohydrates")),
+    f: Math.round(v("fat")), sugar: Math.round(v("sugars") * 10) / 10, salt: Math.round(v("salt") * 10) / 10,
+    per: per === "_serving" ? (p.serving_size || "1") : "100 g",
+    allergens: [...new Set(tags.map(t => AL[t]).filter(Boolean))],
+    vegan: analysis.includes("en:vegan") ? true : analysis.includes("en:non-vegan") ? false : null,
+    vegetarian: analysis.includes("en:vegetarian") ? true : analysis.includes("en:non-vegetarian") ? false : null,
     source: "Open Food Facts", barcode: p.code || barcode || ""
   };
 }
@@ -1951,6 +1997,7 @@ async function lookupBarcode(code) {
     } else {
       S.scanHits = [offToFood(j.product, code)];
       S.scanPick = S.scanHits[0].id;
+      S.scrollResult = true;
     }
   } catch (e) {
     S.scanErr = t().scanNet;
@@ -1999,7 +2046,8 @@ function scan() {
   const T = t() || {};
   const hits = S.scanHits || [];
   const pick = hits.find(f => f.id === S.scanPick);
-  const grade = pick ? rateFood(pick) : null;
+  const vd = pick ? verdict(pick) : null;
+  const grade = vd ? vd.grade : null;
   const L = {
     hint: T.scanWalmart || "Point the camera at a barcode. If there is no code, snap the meal.",
     live: T.pointCode || "Hold steady on the barcode…",
@@ -2037,7 +2085,7 @@ function scan() {
     </div>
     ${S.scanPhoto ? `<img src="${S.scanPhoto}" alt="" style="width:100%;border-radius:14px;margin-top:8px;max-height:160px;object-fit:cover">` : ""}
     ${S.scanErr ? `<p class="muted">${S.scanErr}</p>` : ""}
-    ${S.aiMeal ? `<div class="card">
+    ${S.aiMeal ? `<div class="card" id="scanResult">
       <div class="row" style="align-items:center"><b>${T.aiTitle}</b><span class="tiny">${T.aiConf} ${ {low:T.aiLow, medium:T.aiMed, high:T.aiHigh}[S.aiMeal.confidence] || "" }</span></div>
       ${S.aiMeal.items.map((it, i) => `<div class="item">
         <div class="row" style="align-items:center"><b>${esc(it.name)}</b><button class="chip" data-aidel="${i}" aria-label="✕">✕</button></div>
@@ -2056,10 +2104,13 @@ function scan() {
       <b>${fname(f)}</b>
       <div class="muted">${f.cal ? f.cal+" kcal" : L.unk} · P${f.p} C${f.c} F${f.f}</div>
     </div>`).join("")}
-    ${pick ? `<div class="card">
+    ${pick ? `<div class="card" id="scanResult">
       <b>${fname(pick)}</b>
-      <div>${pick.cal ? pick.cal+" kcal" : L.unk}</div>
-      <div class="grade-${grade||"fair"}">${L.rate}: ${gradeLabel}</div>
+      <div>${pick.cal ? pick.cal+" kcal" : L.unk}${pick.per ? ` · ${T.per} ${esc(pick.per)}` : ""} · P${pick.p} C${pick.c} F${pick.f}</div>
+      <div class="verdict v-${grade||"fair"}">
+        <b>${ {good:"✅", fair:"⚠️", bad:"⛔"}[grade] } ${L.rate}: ${ {good:T.vGood, fair:T.vFair, bad:T.vBad}[grade] }</b>
+        <ul>${vd.reasons.map(r => `<li>${esc(r.msg)}</li>`).join("")}</ul>
+      </div>
       <button class="btn" id="logHit">${L.add}</button>
       <button class="btn ghost" id="rescan">${L.again}</button>
     </div>` : ""}
@@ -2383,7 +2434,7 @@ function bind() {
   document.querySelectorAll("[data-logscan]").forEach(b => b.onclick = () => {
     const f = FOODS.find(x => x.id === b.dataset.logscan);
     if (f) day().foods.push({...f});
-    const g = rateFood(f);
+    const g = verdict(f).grade;
     helperSay(g === "good" ? "happy" : "sad", g === "good" ? "happyFood" : "sadFood");
     persist();
   });
@@ -2432,7 +2483,7 @@ function bind() {
     const f = (S.scanHits||[]).find(x => x.id === S.scanPick);
     if (!f) return;
     day().foods.push({id:f.id,en:f.en,es:f.es,cal:f.cal||0,p:f.p,c:f.c,f:f.f});
-    const g = rateFood(f);
+    const g = verdict(f).grade;
     helperSay(g === "good" ? "happy" : "sad", g === "good" ? "happyFood" : "sadFood");
     persist();
   };
@@ -2513,6 +2564,8 @@ function bind() {
       persist();
     });
   }
+  const scanResult = document.getElementById("scanResult");
+  if (scanResult && S.scrollResult) { S.scrollResult = false; scanResult.scrollIntoView({ block: "start", behavior: "smooth" }); }
   if (S.tab !== "scan") { stopScanCam(); window._saboriaCamTried = false; }
   document.querySelectorAll("[data-beer]").forEach(b => b.onclick = () => {
     const d = day();
