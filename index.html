@@ -547,6 +547,12 @@
     .photo-cta { text-align:center; }
     .photo-cta p { margin:10px 0 0; color:var(--muted); line-height:1.5; }
     .photo-ic { width:64px; height:64px; margin:4px auto 0; display:grid; place-items:center; border-radius:20px; background:#EEF5EF; color:var(--green); }
+    .gitem { display:flex; align-items:center; gap:12px; width:100%; min-height:52px; margin-top:6px; padding:10px 14px; font:inherit; text-align:left; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:14px; cursor:pointer; }
+    .gbox { width:24px; height:24px; flex:none; display:grid; place-items:center; border-radius:7px; border:2px solid var(--green); color:#fff; }
+    .gitem.done .gbox { background:var(--green); }
+    .gitem.done .gname { text-decoration:line-through; color:var(--muted); }
+    .gname { flex:1; font-weight:700; }
+    .gqty { color:var(--muted); font-variant-numeric:tabular-nums; }
   </style>
 </head>
 <body>
@@ -688,6 +694,16 @@ const MEAL_OF = {
   rancheros:["b"], parfait:["b","s"], pbtoast:["b"], tunabowl:["l"], shrimptacos:["l","n"],
   beantacos:["l","n"], chickcamote:["l","n"], applepb:["s"], yogalm:["s"], fruit:["s"]
 };
+// amount of each ingredient per 1x recipe, in the food's unit (FOOD_UNIT, default grams)
+const QTY = {
+  "egg-toast":{egg:2, toast:2, oliveoil:5}, bowl:{chicken:120, rice:150, broccoli:90, oliveoil:5},
+  oatsb:{oats:40, banana:1}, sal:{salmon:120, avocado:.5, spinach:60}, tofu:{tofu:150, beans:100, spinach:60, oliveoil:15},
+  rancheros:{egg:2, tortilla:2, tomato:1, beans:90}, parfait:{yogurt:240, oats:20, banana:.5}, pbtoast:{toast:2, pb:16, banana:.5},
+  tunabowl:{tuna:100, rice:100, avocado:.5, tomato:1, spinach:30}, shrimptacos:{shrimp:100, tortilla:3, avocado:.5, tomato:1, oliveoil:5},
+  beantacos:{beans:170, tortilla:3, avocado:.5, tomato:1}, chickcamote:{chicken:120, sweetpotato:1, broccoli:90, oliveoil:5},
+  applepb:{apple:1, pb:16}, yogalm:{yogurt:240, almonds:14}, fruit:{apple:1, banana:1}
+};
+const FOOD_UNIT = { egg:"pcs", toast:"slices", tortilla:"pcs", banana:"pcs", apple:"pcs", avocado:"pcs", tomato:"pcs", sweetpotato:"pcs", oliveoil:"ml" };
 const MEAL_SHARE = { b:.25, l:.35, n:.30, s1:.10, s2:.10 };
 const TIPS = {
   en:[
@@ -1053,6 +1069,7 @@ Object.assign(I.en, {
   cook:"Cook", genWeek:"Generate my week", swap:"Swap", portion:"portion",
   noRecipes:"No recipes fit your filters for this meal yet. Add one by hand.",
   planAuto:"Portions are scaled so each day lands near your target.",
+  groceryHint:"Everything for the 7 days of your plan, rounded up to what you can buy. Tap to check off.", groceryEmpty:"Generate your week first and the list fills in by itself.", alreadyHave:"Already in your kitchen", aisleProduce:"Fruits and vegetables", aisleProtein:"Protein and dairy", aislePantry:"Pantry", uPcs:"pcs", uSlices:"slices",
   segCode:"Barcode", segPhoto:"Meal photo", segSearch:"Search", typeCode:"Or type the number under the barcode", searchLabel:"Food or product name", photoHint:"Take a photo of the plate from above, with all the food in frame.", takePhoto:"Take photo",
   needHttps:"Accounts need a secure connection. Open Saboria from its https:// address.", scanShort:"Scan", navLabel:"Main", kcalLeft:"kcal left", kcalOver:"kcal over", goalShort:"Goal", eatenShort:"Eaten",
   todayMeals:"Today’s meals", seePlan:"See plan", noMealPlanned:"Nothing planned", undo:"Undo", ateThis:"I ate this",
@@ -1112,6 +1129,7 @@ Object.assign(I.es, {
   cook:"Cocinar", genWeek:"Generar mi semana", swap:"Cambiar", portion:"porción",
   noRecipes:"Todavía no hay recetas que cumplan tus filtros para esta comida. Agrega una a mano.",
   planAuto:"Ajustamos las porciones para que cada día quede cerca de tu meta.",
+  groceryHint:"Todo lo de los 7 días de tu plan, redondeado a lo que puedes comprar. Toca para tachar.", groceryEmpty:"Primero genera tu semana y la lista se llena sola.", alreadyHave:"Ya lo tienes en tu cocina", aisleProduce:"Frutas y verduras", aisleProtein:"Proteínas y lácteos", aislePantry:"Despensa", uPcs:"pzas", uSlices:"rebanadas",
   segCode:"Código", segPhoto:"Foto del plato", segSearch:"Buscar", typeCode:"O escribe los números debajo del código", searchLabel:"Nombre del alimento o producto", photoHint:"Toma la foto del plato desde arriba, con toda la comida a la vista.", takePhoto:"Tomar foto",
   needHttps:"Las cuentas necesitan conexión segura. Abre Saboria desde su dirección https://.", scanShort:"Escanear", navLabel:"Principal", kcalLeft:"kcal restantes", kcalOver:"kcal de más", goalShort:"Meta", eatenShort:"Comido",
   todayMeals:"Comidas de hoy", seePlan:"Ver plan", noMealPlanned:"Nada planeado", undo:"Deshacer", ateThis:"Me lo comí",
@@ -2390,6 +2408,7 @@ function generateWeek() {
     return day;
   });
   S.planAuto = true;
+  S.groceryDone = [];
   S.seed = seed + 1;
 }
 // swap keeps roughly the same calories, like a food exchange
@@ -2405,7 +2424,47 @@ function mealName(m) {
   const r = m.id && RECIPES.find(x => x.id === m.id);
   return r ? (S.lang === "es" ? r.es : r.en) : m.name;
 }
+function groceryList() {
+  const need = {};
+  (S.weekPlan || []).forEach(day => Object.values(day || {}).forEach(m => {
+    const q = m && m.id && QTY[m.id];
+    if (!q) return;
+    Object.entries(q).forEach(([id, n]) => { need[id] = (need[id] || 0) + n * (m.mult || 1); });
+  }));
+  return Object.entries(need).map(([id, n]) => {
+    const f = FOODS.find(x => x.id === id);
+    const unit = FOOD_UNIT[id] || "g";
+    // round up to what you can actually buy
+    const amount = unit === "g" || unit === "ml" ? Math.ceil(n / 50) * 50 : Math.ceil(n);
+    return { id, f, unit, amount, have: S.pantry.includes(id) };
+  }).filter(x => x.f);
+}
+function grocery() {
+  const T = t();
+  const list = groceryList();
+  const units = { g:"g", ml:"ml", pcs:T.uPcs, slices:T.uSlices };
+  const aisles = [["produce", T.aisleProduce], ["protein", T.aisleProtein], ["pantry", T.aislePantry]];
+  const done = S.groceryDone || [];
+  const row = x => `<button class="gitem ${done.includes(x.id) ? "done" : ""}" data-gcheck="${x.id}" aria-pressed="${done.includes(x.id)}">
+      <span class="gbox">${done.includes(x.id) ? icon("check", 16) : ""}</span>
+      <span class="gname">${fname(x.f).replace(/\s*\(.*\)$/, "")}</span>
+      <span class="gqty">${x.amount.toLocaleString()} ${units[x.unit]}</span>
+    </button>`;
+  const buy = list.filter(x => !x.have), have = list.filter(x => x.have);
+  return `<div class="screen">
+    <button class="link" id="backPlan">← ${T.week}</button>
+    <h1>${T.grocery}</h1>
+    <p class="muted">${T.groceryHint}</p>
+    ${!list.length ? `<div class="card"><p class="muted" style="margin:0">${T.groceryEmpty}</p><button class="btn" id="genWeek">${T.genWeek}</button></div>` : ""}
+    ${aisles.map(([a, label]) => {
+      const items = buy.filter(x => (x.f.aisle || "pantry") === a);
+      return items.length ? `<h2 class="tiny" style="margin-top:18px">${label}</h2>${items.map(row).join("")}` : "";
+    }).join("")}
+    ${have.length ? `<h2 class="tiny" style="margin-top:18px">${T.alreadyHave}</h2>${have.map(row).join("")}` : ""}
+  </div>`;
+}
 function plan() {
+  if (S.planView === "grocery") return grocery();
   const T=t();
   const days = S.lang==="es" ? ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"] : ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const slots = mealSlots();
@@ -2415,7 +2474,10 @@ function plan() {
     <h1>${T.week}</h1>
     <p class="muted">${tg.cal} kcal/${T.today||"day"} · ${S.planAuto ? T.planAuto : T.planZero}</p>
     <button class="btn" id="genWeek">${T.genWeek}</button>
-    <button class="btn ghost" id="clearPlan">${T.clearPlan || "Start over"}</button>
+    <div class="row" style="gap:8px">
+      <button class="btn ghost" id="openGrocery" style="margin-top:10px">${T.grocery}</button>
+      <button class="btn ghost" id="clearPlan" style="margin-top:10px">${T.clearPlan || "Start over"}</button>
+    </div>
     ${S.weekPlan.map((day,i) => {
       const total = planDayCals(day);
       return `<div class="card">
@@ -2867,6 +2929,14 @@ function bind() {
   });
   const dislikes = document.getElementById("dislikes");
   if (dislikes) dislikes.oninput = () => { S.dislikes = dislikes.value.slice(0, 300); persistWrite(); };
+  const openGrocery = document.getElementById("openGrocery");
+  if (openGrocery) openGrocery.onclick = () => { S.planView = "grocery"; persist(); window.scrollTo(0, 0); };
+  const backPlan = document.getElementById("backPlan");
+  if (backPlan) backPlan.onclick = () => { S.planView = null; persist(); };
+  document.querySelectorAll("[data-gcheck]").forEach(b => b.onclick = () => {
+    const id = b.dataset.gcheck, d = S.groceryDone || [];
+    S.groceryDone = d.includes(id) ? d.filter(x => x !== id) : d.concat(id); persist();
+  });
   const genWeek = document.getElementById("genWeek");
   if (genWeek) genWeek.onclick = () => showCook(t().cooking, 1600, () => { generateWeek(); persist(); });
   document.querySelectorAll("[data-swap]").forEach(b => b.onclick = () => {
