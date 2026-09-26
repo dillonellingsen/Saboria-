@@ -1069,7 +1069,7 @@ Object.assign(I.en, {
   cook:"Cook", genWeek:"Generate my week", swap:"Swap", portion:"portion",
   noRecipes:"No recipes fit your filters for this meal yet. Add one by hand.",
   planAuto:"Portions are scaled so each day lands near your target.",
-  groceryHint:"Everything for the 7 days of your plan, rounded up to what you can buy. Tap to check off.", groceryEmpty:"Generate your week first and the list fills in by itself.", alreadyHave:"Already in your kitchen", aisleProduce:"Fruits and vegetables", aisleProtein:"Protein and dairy", aislePantry:"Pantry", uPcs:"pcs", uSlices:"slices",
+  perDay:"day", groceryHint:"Everything for the 7 days of your plan, rounded up to what you can buy. Tap to check off.", groceryEmpty:"Generate your week first and the list fills in by itself.", alreadyHave:"Already in your kitchen", aisleProduce:"Fruits and vegetables", aisleProtein:"Protein and dairy", aislePantry:"Pantry", uPcs:"pcs", uSlices:"slices",
   segCode:"Barcode", segPhoto:"Meal photo", segSearch:"Search", typeCode:"Or type the number under the barcode", searchLabel:"Food or product name", photoHint:"Take a photo of the plate from above, with all the food in frame.", takePhoto:"Take photo",
   needHttps:"Accounts need a secure connection. Open Saboria from its https:// address.", scanShort:"Scan", navLabel:"Main", kcalLeft:"kcal left", kcalOver:"kcal over", goalShort:"Goal", eatenShort:"Eaten",
   todayMeals:"Today’s meals", seePlan:"See plan", noMealPlanned:"Nothing planned", undo:"Undo", ateThis:"I ate this",
@@ -1129,7 +1129,7 @@ Object.assign(I.es, {
   cook:"Cocinar", genWeek:"Generar mi semana", swap:"Cambiar", portion:"porción",
   noRecipes:"Todavía no hay recetas que cumplan tus filtros para esta comida. Agrega una a mano.",
   planAuto:"Ajustamos las porciones para que cada día quede cerca de tu meta.",
-  groceryHint:"Todo lo de los 7 días de tu plan, redondeado a lo que puedes comprar. Toca para tachar.", groceryEmpty:"Primero genera tu semana y la lista se llena sola.", alreadyHave:"Ya lo tienes en tu cocina", aisleProduce:"Frutas y verduras", aisleProtein:"Proteínas y lácteos", aislePantry:"Despensa", uPcs:"pzas", uSlices:"rebanadas",
+  perDay:"día", groceryHint:"Todo lo de los 7 días de tu plan, redondeado a lo que puedes comprar. Toca para tachar.", groceryEmpty:"Primero genera tu semana y la lista se llena sola.", alreadyHave:"Ya lo tienes en tu cocina", aisleProduce:"Frutas y verduras", aisleProtein:"Proteínas y lácteos", aislePantry:"Despensa", uPcs:"pzas", uSlices:"rebanadas",
   segCode:"Código", segPhoto:"Foto del plato", segSearch:"Buscar", typeCode:"O escribe los números debajo del código", searchLabel:"Nombre del alimento o producto", photoHint:"Toma la foto del plato desde arriba, con toda la comida a la vista.", takePhoto:"Tomar foto",
   needHttps:"Las cuentas necesitan conexión segura. Abre Saboria desde su dirección https://.", scanShort:"Escanear", navLabel:"Principal", kcalLeft:"kcal restantes", kcalOver:"kcal de más", goalShort:"Meta", eatenShort:"Comido",
   todayMeals:"Comidas de hoy", seePlan:"Ver plan", noMealPlanned:"Nada planeado", undo:"Deshacer", ateThis:"Me lo comí",
@@ -2478,7 +2478,7 @@ function plan() {
   const tg = targets();
   return `<div class="screen">
     <h1>${T.week}</h1>
-    <p class="muted">${tg.cal} kcal/${T.today||"day"} · ${S.planAuto ? T.planAuto : T.planZero}</p>
+    <p class="muted">${tg.cal} kcal/${T.perDay} · ${S.planAuto ? T.planAuto : T.planZero}</p>
     <button class="btn" id="genWeek">${T.genWeek}</button>
     <div class="row" style="gap:8px">
       <button class="btn ghost" id="openGrocery" style="margin-top:10px">${T.grocery}</button>
