@@ -535,6 +535,11 @@ const ADS = {
   client: "",         // ca-pub-XXXXXXXX
   slot: ""            // ad slot id
 };
+// Meal photo recognition. Deploy vision-api/ and paste its URL here.
+// Empty = fall back to the on-device guesser (much less accurate).
+const VISION = {
+  endpoint: ""        // e.g. https://saboria-vision.<you>.workers.dev
+};
 const FOODS = [
   {id:"egg",en:"Egg",es:"Huevo",cal:78,p:6,c:0.6,f:5,tags:["eggs","huevos","scrambled"],aisle:"protein"},
   {id:"toast",en:"Whole wheat toast",es:"Pan integral",cal:80,p:4,c:14,f:1,tags:["toast","bread","pan"],aisle:"pantry"},
@@ -992,7 +997,11 @@ Object.assign(I.en, {
   cooking:"Cooking up your plan…", booting:"Firing up the kitchen…",
   cook:"Cook", genWeek:"Generate my week", swap:"Swap", portion:"portion",
   noRecipes:"No recipes fit your filters for this meal yet. Add one by hand.",
-  planAuto:"Portions are scaled so each day lands near your target."
+  planAuto:"Portions are scaled so each day lands near your target.",
+  aiLooking:"Reading your plate…", aiTitle:"What we see", aiConf:"Confidence:", aiLow:"low", aiMed:"medium", aiHigh:"high",
+  aiCheck:"This is an estimate from a photo. Fix the grams if they look off; oil and sauces are the usual misses.",
+  aiFail:"We couldn’t read the photo. Try again, or search the food by name.",
+  aiNoFood:"We don’t see food in that photo. Try a closer shot of the plate."
 });
 Object.assign(I.es, {
   back:"Atrás",
@@ -1038,7 +1047,11 @@ Object.assign(I.es, {
   cooking:"Cocinando tu plan…", booting:"Prendiendo la cocina…",
   cook:"Cocinar", genWeek:"Generar mi semana", swap:"Cambiar", portion:"porción",
   noRecipes:"Todavía no hay recetas que cumplan tus filtros para esta comida. Agrega una a mano.",
-  planAuto:"Ajustamos las porciones para que cada día quede cerca de tu meta."
+  planAuto:"Ajustamos las porciones para que cada día quede cerca de tu meta.",
+  aiLooking:"Leyendo tu plato…", aiTitle:"Lo que vemos", aiConf:"Confianza:", aiLow:"baja", aiMed:"media", aiHigh:"alta",
+  aiCheck:"Es una estimación con una foto. Corrige los gramos si no cuadran; el aceite y las salsas son lo que más se escapa.",
+  aiFail:"No pudimos leer la foto. Intenta de nuevo o busca el alimento por nombre.",
+  aiNoFood:"No vemos comida en esa foto. Acércate más al plato."
 });
 
 function isUS() { return S.lang !== "es"; }
@@ -1175,7 +1188,7 @@ function targets() {
     water: Math.round(kg*35), restricted, weekly};
 }
 function persist() { persistWrite(); render(); }
-function fname(f) { return S.lang==="es" ? f.es : f.en; }
+function fname(f) { return esc(S.lang==="es" ? f.es : f.en); }
 
 function render() {
   normalize();
@@ -1853,6 +1866,7 @@ async function identifyMealFile(file) {
         if (code.length >= 8) { S.scanCode = code; await lookupBarcode(code); return; }
       } catch (e) {}
     }
+    if (VISION.endpoint) { await analyzeMealAI(file); return; }
     await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js");
     await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js");
     const img = document.createElement("img");
@@ -1875,6 +1889,42 @@ async function identifyMealFile(file) {
     S.scanBusy = false;
     persist();
   }
+}
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+async function shrinkImage(file, max) {
+  const img = document.createElement("img");
+  img.src = URL.createObjectURL(file);
+  await img.decode();
+  const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+  const c = document.createElement("canvas");
+  c.width = Math.round(img.naturalWidth * k);
+  c.height = Math.round(img.naturalHeight * k);
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(img.src);
+  return c.toDataURL("image/jpeg", 0.82).split(",")[1];
+}
+async function analyzeMealAI(file) {
+  S.aiMeal = null; S.scanHits = []; S.scanPick = null;
+  openCook(t().aiLooking);
+  try {
+    const image = await shrinkImage(file, 1024);
+    const r = await fetch(VISION.endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image, media_type: "image/jpeg", lang: S.lang })
+    });
+    const j = await r.json().catch(() => ({ error: "parse" }));
+    if (!r.ok || j.error) S.scanErr = t().aiFail;
+    else if (!j.is_food || !(j.items || []).length) S.scanErr = t().aiNoFood;
+    else S.aiMeal = { confidence: j.confidence, note: j.note, items: j.items.map(i => ({ ...i, base: { ...i } })) };
+  } catch (e) {
+    S.scanErr = t().aiFail;
+  }
+  closeCook();
+  S.scanBusy = false;
+  persist();
 }
 function offToFood(p, barcode) {
   const n = p.nutriments || {};
@@ -1987,12 +2037,27 @@ function scan() {
     </div>
     ${S.scanPhoto ? `<img src="${S.scanPhoto}" alt="" style="width:100%;border-radius:14px;margin-top:8px;max-height:160px;object-fit:cover">` : ""}
     ${S.scanErr ? `<p class="muted">${S.scanErr}</p>` : ""}
+    ${S.aiMeal ? `<div class="card">
+      <div class="row" style="align-items:center"><b>${T.aiTitle}</b><span class="tiny">${T.aiConf} ${ {low:T.aiLow, medium:T.aiMed, high:T.aiHigh}[S.aiMeal.confidence] || "" }</span></div>
+      ${S.aiMeal.items.map((it, i) => `<div class="item">
+        <div class="row" style="align-items:center"><b>${esc(it.name)}</b><button class="chip" data-aidel="${i}" aria-label="✕">✕</button></div>
+        <div class="row" style="align-items:center;justify-content:flex-start;gap:8px;margin-top:6px">
+          <input type="number" inputmode="numeric" data-aigrams="${i}" value="${it.grams}" style="margin:0;width:90px"> g · <b>${it.kcal} kcal</b>
+        </div>
+        <div class="muted">P${it.protein_g} C${it.carbs_g} F${it.fat_g}</div>
+      </div>`).join("")}
+      <div class="big">${S.aiMeal.items.reduce((s, it) => s + it.kcal, 0)} kcal</div>
+      ${S.aiMeal.note ? `<div class="muted">${esc(S.aiMeal.note)}</div>` : ""}
+      <div class="hint">${T.aiCheck}</div>
+      ${S.aiMeal.items.length ? `<button class="btn" id="logAi">${L.add}</button>` : ""}
+      <button class="btn ghost" id="rescan">${L.again}</button>
+    </div>` : ""}
     ${hits.map(f => `<div class="item ${S.scanPick===f.id?"on":""}" data-scanpick="${f.id}">
-      <b>${S.lang==="es"?f.es:f.en}</b>
+      <b>${fname(f)}</b>
       <div class="muted">${f.cal ? f.cal+" kcal" : L.unk} · P${f.p} C${f.c} F${f.f}</div>
     </div>`).join("")}
     ${pick ? `<div class="card">
-      <b>${S.lang==="es"?pick.es:pick.en}</b>
+      <b>${fname(pick)}</b>
       <div>${pick.cal ? pick.cal+" kcal" : L.unk}</div>
       <div class="grade-${grade||"fair"}">${L.rate}: ${gradeLabel}</div>
       <button class="btn" id="logHit">${L.add}</button>
@@ -2170,12 +2235,19 @@ function plan() {
     }).join("")}
   </div>`;
 }
-function showCook(text, ms, done) {
+function openCook(text) {
   const el = document.getElementById("boot");
-  if (!el) { done(); return; }
+  if (!el) return;
   el.querySelector("p").textContent = text;
   el.classList.remove("out");
-  setTimeout(() => { done(); el.classList.add("out"); }, ms);
+}
+function closeCook() {
+  const el = document.getElementById("boot");
+  if (el) el.classList.add("out");
+}
+function showCook(text, ms, done) {
+  openCook(text);
+  setTimeout(() => { done(); closeCook(); }, ms);
 }
 function hideBoot() {
   const el = document.getElementById("boot");
@@ -2367,7 +2439,30 @@ function bind() {
   const snapMeal = document.getElementById("snapMeal");
   if (snapMeal) snapMeal.onclick = () => document.getElementById("scanFile").click();
   const rescan = document.getElementById("rescan");
-  if (rescan) rescan.onclick = () => { S.scanHits = []; S.scanPick = null; S.scanErr = ""; persist(); };
+  if (rescan) rescan.onclick = () => { S.scanHits = []; S.scanPick = null; S.scanErr = ""; S.aiMeal = null; S.scanPhoto = null; persist(); };
+  document.querySelectorAll("[data-aigrams]").forEach(el => el.onchange = () => {
+    const it = S.aiMeal && S.aiMeal.items[Number(el.dataset.aigrams)];
+    const g = Math.max(0, Math.round(Number(el.value) || 0));
+    if (!it || !it.base.grams) return;
+    const k = g / it.base.grams;
+    Object.assign(it, { grams: g, kcal: Math.round(it.base.kcal * k), protein_g: Math.round(it.base.protein_g * k),
+      carbs_g: Math.round(it.base.carbs_g * k), fat_g: Math.round(it.base.fat_g * k) });
+    persist();
+  });
+  document.querySelectorAll("[data-aidel]").forEach(b => b.onclick = () => {
+    S.aiMeal.items.splice(Number(b.dataset.aidel), 1); persist();
+  });
+  const logAi = document.getElementById("logAi");
+  if (logAi) logAi.onclick = () => {
+    const now = Date.now();
+    S.aiMeal.items.forEach((it, i) => day().foods.push({ id: "ai-" + now + "-" + i, en: it.name, es: it.name,
+      cal: it.kcal, p: it.protein_g, c: it.carbs_g, f: it.fat_g }));
+    const total = S.aiMeal.items.reduce((a, it) => ({ cal: a.cal + it.kcal, p: a.p + it.protein_g }), { cal: 0, p: 0 });
+    const g = rateFood(total);
+    helperSay(g === "good" ? "happy" : "sad", g === "good" ? "happyFood" : "sadFood");
+    S.aiMeal = null; S.scanPhoto = null; S.scanErr = "";
+    persist();
+  };
   if (scanFile) {
     const prev = scanFile.onchange;
     scanFile.onchange = () => {
@@ -2376,10 +2471,12 @@ function bind() {
       const reader = new FileReader();
       reader.onload = () => { S.scanPhoto = reader.result; };
       reader.readAsDataURL(file);
+      S.aiMeal = null;
       identifyMealFile(file);
     };
   }
-  if (S.tab === "scan" && document.getElementById("liveCam") && !window._saboriaStream && !(S.scanHits||[]).length) {
+  if (S.tab === "scan" && document.getElementById("liveCam") && !window._saboriaStream && !window._saboriaCamTried && !(S.scanHits||[]).length) {
+    window._saboriaCamTried = true;
     const video = document.getElementById("liveCam");
     navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -2416,7 +2513,7 @@ function bind() {
       persist();
     });
   }
-  if (S.tab !== "scan") stopScanCam();
+  if (S.tab !== "scan") { stopScanCam(); window._saboriaCamTried = false; }
   document.querySelectorAll("[data-beer]").forEach(b => b.onclick = () => {
     const d = day();
     d.cans = d.cans || 0; d.bottles = d.bottles || 0;

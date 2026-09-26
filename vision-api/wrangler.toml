@@ -1,0 +1,11 @@
+name = "saboria-vision"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# The site allowed to call this API, e.g. "https://saboria.app". "*" allows any site.
+ALLOWED_ORIGIN = "*"
+
+# The API key is a secret, never put it here. Set it with:
+#   npx wrangler secret put ANTHROPIC_API_KEY
