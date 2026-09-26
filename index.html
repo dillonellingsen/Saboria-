@@ -498,6 +498,47 @@
     @keyframes panToss { 0%,100% { transform:rotate(0); } 30% { transform:rotate(7deg) translateY(3px); } 50% { transform:rotate(-6deg); } 70% { transform:rotate(0); } }
     @keyframes foodToss { 0%,30%,100% { transform:translateY(0) rotate(0); } 62% { transform:translateY(-70px) rotate(var(--r)); } }
     @media (prefers-reduced-motion: reduce) { .cook-art svg, .cook-art .fd { animation:none; } }
+    /* Today screen v2 + nav (ui-ux-pro-max pass) */
+    .tabs { grid-template-columns: repeat(5, 1fr) !important; }
+    .tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:56px; font-size:11px; cursor:pointer; touch-action:manipulation; }
+    .tab .tab-ic { display:grid; place-items:center; width:40px; height:28px; border-radius:14px; transition:background .2s ease; }
+    .tab.on .tab-ic { background:var(--goldsoft); }
+    .tab-main .tab-ic { width:48px; height:48px; margin-top:-18px; border-radius:50%; background:var(--green); color:#fff; box-shadow:0 4px 12px rgba(47,107,60,.35); }
+    .tab-main.on .tab-ic { background:var(--green); outline:3px solid var(--goldsoft); }
+    .tab:focus-visible, .round:focus-visible, .link:focus-visible, .btn:focus-visible, .chip:focus-visible { outline:3px solid var(--gold); outline-offset:2px; }
+    .home2 h2 { margin:0; }
+    .home-head h1 { margin-bottom:2px; }
+    .hero-row { display:flex; align-items:center; gap:14px; margin-top:6px; }
+    .hero-ring { position:relative; width:168px; height:168px; flex:none; }
+    .hero-mid { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .hero-mid b { font-size:34px; line-height:1; color:var(--ink); font-variant-numeric:tabular-nums; }
+    .hero-mid span { font-size:13px; color:var(--muted); margin-top:4px; }
+    .hero-stats { margin:0; display:grid; gap:10px; }
+    .hero-stats dt { font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; }
+    .hero-stats dd { margin:0; font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; }
+    .macs { display:grid; gap:10px; margin-top:14px; }
+    .mac-top { display:flex; justify-content:space-between; font-size:14px; }
+    .mac-top small { color:var(--muted); font-weight:600; }
+    .sec-head { display:flex; justify-content:space-between; align-items:center; margin:22px 0 4px; }
+    .sec-head h2 { font-size:18px; }
+    .link { border:0; background:none; color:var(--green); font:inherit; font-weight:700; min-height:44px; padding:0 4px; cursor:pointer; }
+    .meal { display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:10px 12px 10px 14px; margin-top:8px; }
+    .meal.done { background:#EEF5EF; border-color:#B9D6BF; }
+    .meal-txt { flex:1; min-width:0; }
+    .meal-txt b { display:block; }
+    .round { width:44px; height:44px; flex:none; display:grid; place-items:center; border-radius:50%; border:1.5px solid var(--green); background:#fff; color:var(--green); cursor:pointer; touch-action:manipulation; transition:transform .15s ease; }
+    .round:active { transform:scale(.94); }
+    .round.on { background:var(--green); color:#fff; }
+    .round.ghost { border-color:var(--line); color:var(--muted); }
+    .btn .ico { vertical-align:-5px; margin-right:4px; }
+    .water { display:flex; align-items:center; gap:12px; }
+    .water-ic { width:40px; height:40px; flex:none; display:grid; place-items:center; border-radius:12px; background:#E3F1F6; color:var(--water); }
+    .water .grow { flex:1; min-width:0; }
+    .water-num { font-size:18px; font-weight:800; margin:2px 0 6px; font-variant-numeric:tabular-nums; }
+    .more-log summary { font-weight:800; cursor:pointer; min-height:28px; list-style-position:inside; }
+    .more-log .chip, .home2 .chip { min-height:44px; }
+    .tip p { margin:6px 0 0; font-size:16px; line-height:1.5; font-weight:600; }
+    @media (max-width: 360px) { .hero-row { flex-direction:column; } }
   </style>
 </head>
 <body>
@@ -1004,6 +1045,9 @@ Object.assign(I.en, {
   cook:"Cook", genWeek:"Generate my week", swap:"Swap", portion:"portion",
   noRecipes:"No recipes fit your filters for this meal yet. Add one by hand.",
   planAuto:"Portions are scaled so each day lands near your target.",
+  scanShort:"Scan", navLabel:"Main", kcalLeft:"kcal left", kcalOver:"kcal over", goalShort:"Goal", eatenShort:"Eaten",
+  todayMeals:"Today’s meals", seePlan:"See plan", noMealPlanned:"Nothing planned", undo:"Undo", ateThis:"I ate this",
+  addToPlan:"Add", alsoAte:"Also eaten", remove:"Remove", logFood:"Log food", moreLogs:"Steps and drinks",
   per:"per", vGood:"Good fit", vFair:"Okay, watch this", vBad:"Not for you right now",
   vAllergy:"Contains an allergen you marked:", vNotVegan:"Not vegan.", vNotVeg:"Not vegetarian.",
   vOver:"You have", vSugar:"of sugar: half or more of the ~25 g a day the WHO suggests.", vSugarDay:"of sugar: more than the WHO suggests for a whole day (~25 g).",
@@ -1059,6 +1103,9 @@ Object.assign(I.es, {
   cook:"Cocinar", genWeek:"Generar mi semana", swap:"Cambiar", portion:"porción",
   noRecipes:"Todavía no hay recetas que cumplan tus filtros para esta comida. Agrega una a mano.",
   planAuto:"Ajustamos las porciones para que cada día quede cerca de tu meta.",
+  scanShort:"Escanear", navLabel:"Principal", kcalLeft:"kcal restantes", kcalOver:"kcal de más", goalShort:"Meta", eatenShort:"Comido",
+  todayMeals:"Comidas de hoy", seePlan:"Ver plan", noMealPlanned:"Nada planeado", undo:"Deshacer", ateThis:"Me lo comí",
+  addToPlan:"Agregar", alsoAte:"También comiste", remove:"Quitar", logFood:"Registrar comida", moreLogs:"Pasos y bebidas",
   per:"por", vGood:"Te queda bien", vFair:"Se puede, pero ojo", vBad:"Mejor no, por ahora",
   vAllergy:"Tiene un alérgeno que marcaste:", vNotVegan:"No es vegano.", vNotVeg:"No es vegetariano.",
   vOver:"Te quedan", vSugar:"de azúcar: la mitad o más de los ~25 g al día que sugiere la OMS.", vSugarDay:"de azúcar: más de lo que la OMS sugiere para todo un día (~25 g).",
@@ -1463,6 +1510,8 @@ function normalize() {
   if (!S.meals || !S.meals.length) S.meals = ["b","l","n"];
   if (!S.health) S.health = [];
   if (!S.speed) S.speed = "rec";
+  // the floating helper covered content on Today; it now starts off and can be turned on in More
+  if (!S.uiV2) { S.uiV2 = true; S.helperHidden = true; }
   if (!S.onboarded && !obSteps().includes(S.step)) S.step = obSteps()[0];
 }
 
@@ -1694,18 +1743,33 @@ function helperUI() {
   </div>`;
 }
 
+// Lucide-style stroke icons (24px grid), one family for the whole nav
+const ICONS = {
+  home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+  plan: '<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+  scan: '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M7 12h10"/>',
+  pantry: '<rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M5 10h14M9 6v2M9 13v3"/>',
+  more: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  drop: '<path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>'
+};
+function icon(name, size) {
+  const s = size || 22;
+  return `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+}
 function mainUI() {
   const T=t();
   const inner = S.tab==="home"?home():S.tab==="pantry"?pantry():S.tab==="plan"?plan():S.tab==="read"?read():S.tab==="scan"?scan():more();
-  const tipPopup = (S.tab==="home" && S.homeTip && !S.tipDismissed) ? `<div class="modal"><div class="sheet">
-      <div class="tiny">${T.tip} · ${S.homeTipKind || "tip"}</div>
-      <p style="font-size:18px;font-weight:700;line-height:1.35">${S.homeTip}</p>
-      <button class="btn" id="gotTip">${T.gotIt}</button>
-    </div></div>` : "";
-  return `${inner}${tipPopup}${helperUI()}
-    <nav class="tabs">
-      ${[["home","🏠",T.home],["pantry","🧊",T.pantry],["scan","📷",T.scan||"Scan"],["plan","📅",T.planTab],["read","📖",T.read],["more","⋯",T.more]].map(([id,ic,lb])=>
-        `<button class="tab ${S.tab===id?"on":""}" data-tab="${id}">${ic}<br>${lb}</button>`).join("")}
+  const active = S.tab === "read" ? "more" : S.tab;
+  const tabs = [["home",T.home],["plan",T.planTab],["scan",T.scanShort],["pantry",T.pantry],["more",T.more]];
+  return `${inner}${helperUI()}
+    <nav class="tabs" aria-label="${T.navLabel}">
+      ${tabs.map(([id,lb]) =>
+        `<button class="tab ${active===id?"on":""} ${id==="scan"?"tab-main":""}" data-tab="${id}" ${active===id?'aria-current="page"':""}>
+          <span class="tab-ic">${icon(id, id==="scan" ? 26 : 22)}</span><span>${lb}</span>
+        </button>`).join("")}
     </nav>`;
 }
 function adBox() {
@@ -1716,103 +1780,124 @@ function adBox() {
     <ins class="adsbygoogle" style="display:block" data-ad-client="${ADS.client}" data-ad-slot="${ADS.slot}" data-ad-format="auto" data-full-width-responsive="true"></ins>
   </div>`;
 }
+function todayIndex() { return (new Date().getDay() + 6) % 7; } // plan weeks start on Monday
+function heroRing(used, goal) {
+  const T = t();
+  const p = Math.max(0, Math.min(1, used / Math.max(1, goal)));
+  const over = used > goal;
+  const c = 2 * Math.PI * 52;
+  const left = Math.abs(goal - used);
+  return `<div class="hero-ring" role="img" aria-label="${used} / ${goal} kcal">
+    <svg viewBox="0 0 120 120" width="168" height="168">
+      <circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="11"/>
+      <circle cx="60" cy="60" r="52" fill="none" stroke="${over ? "#B4432B" : "var(--green)"}" stroke-width="11" stroke-linecap="round"
+        stroke-dasharray="${(c*p).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 60 60)"/>
+    </svg>
+    <div class="hero-mid">
+      <b>${left.toLocaleString()}</b>
+      <span>${over ? T.kcalOver : T.kcalLeft}</span>
+    </div>
+  </div>`;
+}
+function macroRow(label, used, goal) {
+  const pct = Math.min(100, Math.round(used / Math.max(1, goal) * 100));
+  return `<div class="mac">
+    <div class="mac-top"><span>${label}</span><b>${Math.round(used)}<small> / ${goal} g</small></b></div>
+    <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+  </div>`;
+}
 function home() {
   const T=t(); const tg=targets(); const used=usedCals();
-  const tip = currentTip();
-  const week = last7();
-  const maxCal = Math.max(tg.cal, ...week.map(d => d.cal), 1);
-  const waterGoal = tg.water;
-  const waterNow = day().water;
+  const d = day();
+  const plan = (S.weekPlan && S.weekPlan[todayIndex()]) || {};
+  const slots = mealSlots();
+  const planned = slots.map(k => {
+    const m = plan[k];
+    const id = "plan-" + today() + "-" + k;
+    return { k, m, id, done: d.foods.some(f => f.id === id) };
+  });
+  const extras = d.foods.map((f, i) => ({ f, i })).filter(x => !String(x.f.id).startsWith("plan-" + today()));
   const us = isUS();
-  const waterLabel = us ? `${Math.round(waterNow/29.5735)} / ${Math.round(waterGoal/29.5735)} ${T.oz}` : `${waterNow} / ${waterGoal} ${T.ml}`;
-  return `<div class="screen">
-    <h1>${helloByHour()}</h1>
-    <p class="muted">${T.today} · ${T.tagline}</p>
+  const waterGoal = tg.water, waterNow = d.water || 0;
+  const step = us ? 237 : 250;
+  const waterTxt = us ? `${Math.round(waterNow/29.5735)} / ${Math.round(waterGoal/29.5735)} ${T.oz}` : `${(waterNow/1000).toFixed(2).replace(/\.?0+$/,"")} / ${(waterGoal/1000).toFixed(1)} L`;
+  const tip = currentTip();
+  return `<div class="screen home2">
+    <header class="home-head">
+      <h1>${helloByHour()}</h1>
+      <div class="muted">${(d => d.charAt(0).toUpperCase() + d.slice(1))(new Date().toLocaleDateString(S.lang==="es"?"es-MX":"en-US",{weekday:"long", day:"numeric", month:"long"}))}</div>
+    </header>
     ${adBox()}
-    <div class="card">
-      <div class="tiny">${T.calories}</div>
-      <div class="big">${used} <span style="font-size:16px;color:var(--muted)">${T.eaten}</span></div>
-      <div class="muted">0 → ${tg.cal} ${T.ofGoal || "goal"} · ${Math.max(0,tg.cal-used)} ${T.remain}</div>
-      <div class="muted">${T.calFromYou || "From your age, weight, height, activity, goal, drinking and smoking answers."}</div>
-      <div class="muted" style="margin-top:4px">${T.burned}: ${todayBurn()} kcal · ${T.net}: ${Math.max(0, used - todayBurn())}</div>
-      <div style="margin-top:8px">${chartBox(used, tg, week, maxCal)}</div>
-      <div class="chips" style="margin-top:8px;justify-content:center">
-        <button class="chip ${(S.chartType||"ring")==="ring"?"on":""}" data-chart="ring">🍩 ${T.chartRing}</button>
-        <button class="chip ${S.chartType==="bars"?"on":""}" data-chart="bars">📊 ${T.chartBars}</button>
-        <button class="chip ${S.chartType==="line"||S.chartType==="week"?"on":""}" data-chart="line">📈 ${T.chartLine}</button>
+    <section class="card hero" aria-labelledby="calT">
+      <h2 id="calT" class="tiny">${T.calories}</h2>
+      <div class="hero-row">
+        ${heroRing(used, tg.cal)}
+        <dl class="hero-stats">
+          <div><dt>${T.goalShort}</dt><dd>${tg.cal.toLocaleString()}</dd></div>
+          <div><dt>${T.eatenShort}</dt><dd>${used.toLocaleString()}</dd></div>
+          ${todayBurn() ? `<div><dt>${T.burned}</dt><dd>${todayBurn()}</dd></div>` : ""}
+        </dl>
       </div>
-      <div class="row" style="margin-top:12px">
-        ${macro("P", usedM("p"), tg.protein)}
-        ${macro("C", usedM("c"), tg.carbs)}
-        ${macro("F", usedM("f"), tg.fat)}
+      <div class="macs">
+        ${macroRow(T.protein, usedM("p"), tg.protein)}
+        ${macroRow(T.carbs, usedM("c"), tg.carbs)}
+        ${macroRow(T.fat, usedM("f"), tg.fat)}
       </div>
-    </div>
-    <div class="card">
-      <div class="icon-row">
-        <div class="feet" aria-hidden="true"><span class="l">👟</span><span class="r">👟</span></div>
-        <div class="grow">
-      <div class="tiny">${T.steps}</div>
-      <div class="big" id="liveSteps">${day().steps || 0}</div>
-      <div class="muted">${T.burned} ${todayBurn()} kcal · ${T.stepCalNote}</div>
-        </div></div>
-      <p class="muted" style="margin-top:6px">${T.stepsHint}</p>
-      <div class="chips" style="margin-top:8px">
+    </section>
+
+    <section aria-labelledby="mealsT">
+      <div class="sec-head"><h2 id="mealsT">${T.todayMeals}</h2><button class="link" data-tab="plan">${T.seePlan}</button></div>
+      ${planned.map(({k, m, id, done}) => `<div class="meal ${done ? "done" : ""}">
+        <div class="meal-txt">
+          <div class="tiny">${slotLabel(k)}</div>
+          ${m ? `<b>${esc(mealName(m))}</b><div class="muted">${m.cal || 0} kcal</div>` : `<div class="muted">${T.noMealPlanned}</div>`}
+        </div>
+        ${m ? (done
+          ? `<button class="round on" data-unlog="${id}" aria-label="${T.undo}">${icon("check", 20)}</button>`
+          : `<button class="round" data-logplan="${k}" aria-label="${T.ateThis}">${icon("plus", 20)}</button>`)
+          : `<button class="link" data-tab="plan">${T.addToPlan}</button>`}
+      </div>`).join("")}
+      ${extras.length ? `<div class="tiny" style="margin:14px 0 4px">${T.alsoAte}</div>
+        ${extras.map(({f, i}) => `<div class="meal">
+          <div class="meal-txt"><b>${fname(f)}</b><div class="muted">${f.cal} kcal</div></div>
+          <button class="round ghost" data-del="${i}" aria-label="${T.remove}">${icon("x", 18)}</button>
+        </div>`).join("")}` : ""}
+      <button class="btn" data-tab="scan">${icon("scan", 20)} ${T.logFood}</button>
+    </section>
+
+    <section class="card water" aria-labelledby="waterT">
+      <span class="water-ic">${icon("drop", 22)}</span>
+      <div class="grow">
+        <h2 id="waterT" class="tiny">${T.water}</h2>
+        <div class="water-num">${waterTxt}</div>
+        <div class="bar"><div class="fill" style="width:${Math.min(100, waterNow/waterGoal*100)}%;background:var(--water)"></div></div>
+      </div>
+      <button class="round" data-water="${step}" aria-label="${T.addWater} ${us ? "8 " + T.oz : "250 " + T.ml}">${icon("plus", 20)}</button>
+    </section>
+
+    <details class="card more-log">
+      <summary>${T.moreLogs}</summary>
+      <div class="tiny" style="margin-top:12px">${T.steps}</div>
+      <div class="row" style="align-items:baseline;justify-content:flex-start;gap:8px"><b style="font-size:22px">${(d.steps||0).toLocaleString()}</b><span class="muted">${todayBurn()} kcal</span></div>
+      <div class="chips" style="margin-top:6px">
         <button class="chip" data-steps="1000">+ 1,000</button>
         <button class="chip" data-steps="2500">+ 2,500</button>
-        <button class="chip" data-steps="5000">+ 5,000</button>
+        <button class="chip" id="walkBtn">${S.walkOn ? T.walkStop : T.walkNow}</button>
       </div>
-      <div class="row" style="margin-top:8px;align-items:center">
-        <input id="stepAmt" type="number" inputmode="numeric" placeholder="${T.addSteps}" style="margin:0">
-        <button class="btn" id="addSteps" style="width:auto;margin:0 0 0 8px;padding:12px">${T.addSteps}</button>
-      </div>
-      <button class="btn ghost" id="walkBtn" style="margin-top:8px">${S.walkOn ? T.walkStop : T.walkNow}</button>
-    </div>
-    <div class="card">
-      <div class="icon-row">
-        <div class="mug" aria-hidden="true"><i class="foam"></i><i class="glass"><i class="beer"></i></i><i class="handle"></i></div>
-        <div class="grow">
-          <div class="tiny">${T.beer}</div>
-          <div class="big">${(day().cans||0)+(day().bottles||0)}</div>
-          <div class="muted">${(day().cans||0)} ${T.can} · ${(day().bottles||0)} ${T.bottle} · ${beerCals()} kcal</div>
-        </div>
-      </div>
-      <div class="beer-pips">${Array.from({length:12},(_,i)=>`<span class="pip ${i < ((day().cans||0)+(day().bottles||0)) ? "on":""}"></span>`).join("")}</div>
-      <p class="muted">${T.beerHint}</p>
-      <div class="chips" style="margin-top:8px">
+      <div class="tiny" style="margin-top:16px">${T.beer}</div>
+      <div class="row" style="align-items:baseline;justify-content:flex-start;gap:8px"><b style="font-size:22px">${(d.cans||0)+(d.bottles||0)}</b><span class="muted">${beerCals()} kcal</span></div>
+      <div class="chips" style="margin-top:6px">
         <button class="chip" data-beer="cans">+ ${T.can}</button>
         <button class="chip" data-beer="bottles">+ ${T.bottle}</button>
-        <button class="chip" data-beer="undo">${T.habNo === "No" ? "–" : "–"}</button>
+        <button class="chip" data-beer="undo" aria-label="${T.undo}">−</button>
       </div>
-    </div>
-    <div class="card">
-      <div class="icon-row">
-        <div class="drop" aria-hidden="true"></div>
-        <div class="grow">
-      <div class="tiny">${T.water}</div>
-      <div style="font-size:22px;font-weight:800">${waterLabel}</div>
-      <div class="bar"><div class="fill" style="width:${Math.min(100,waterNow/waterGoal*100)}%;background:var(--water)"></div></div>
-        </div></div>
-      <div class="chips" style="margin-top:10px">
-        ${us
-          ? `<button class="chip" data-water="237">+ 8 ${T.oz}</button><button class="chip" data-water="355">+ 12 ${T.oz}</button><button class="chip" data-water="473">+ 16 ${T.oz}</button>`
-          : `<button class="chip" data-water="100">+ 100 ${T.ml}</button><button class="chip" data-water="250">+ 250 ${T.ml}</button><button class="chip" data-water="500">+ 500 ${T.ml}</button>`}
-      </div>
-      <div class="row" style="margin-top:8px;align-items:center">
-        <input id="waterAmt" type="number" inputmode="decimal" placeholder="${T.customWater}" style="margin-top:0">
-        <button class="btn" id="addCustomWater" style="width:auto;margin-top:0;margin-left:8px;padding:12px 14px">${T.addWater}</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="tiny">${T.progress}</div>
-      <div class="chart">
-        ${week.map(d => `<div class="cbar"><i style="height:${Math.max(6, (d.cal/maxCal)*100)}%"></i><span>${d.label.slice(3)}</span></div>`).join("")}
-      </div>
-      <p class="muted">${T.calories}: 0 → ${tg.cal} ${T.ofGoal}</p>
-    </div>
-    <div class="grid">
-      <button class="quick" data-tab="pantry">${T.fridge}</button>
-      <button class="quick" data-tab="scan">${T.scan}</button>
-    </div>
+    </details>
+
+    ${tip && S.tipDismissed !== today() ? `<aside class="card tip">
+      <div class="tiny">${T.tip}</div>
+      <p>${esc(tip.t || tip)}</p>
+      <div class="row"><button class="link" id="nextTip">${T.anotherTip}</button><button class="link" id="gotTip">${T.gotIt}</button></div>
+    </aside>` : ""}
   </div>`;
 }
 function macro(l,u,m){
@@ -2429,7 +2514,7 @@ function bind() {
   const helpAsk = document.getElementById("helpAsk");
   if (helpAsk) helpAsk.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); sendAsk && sendAsk.onclick(); } };
   const gotTip = document.getElementById("gotTip");
-  if (gotTip) gotTip.onclick = () => { S.tipDismissed = true; persist(); };
+  if (gotTip) gotTip.onclick = () => { S.tipDismissed = today(); persist(); };
   document.querySelectorAll("[data-chart]").forEach(b => b.onclick = () => { S.chartType = b.dataset.chart; persist(); });
   document.querySelectorAll("[data-scanfood]").forEach(b => b.onclick = () => { S.scanFood = b.dataset.scanfood; persist(); });
   document.querySelectorAll("[data-logscan]").forEach(b => b.onclick = () => {
@@ -2614,6 +2699,19 @@ function bind() {
   document.querySelectorAll("[data-add]").forEach(b => b.onclick = () => {
     const f = FOODS.find(x=>x.id===b.dataset.add);
     day().foods.push({...f}); persist();
+  });
+  document.querySelectorAll("[data-logplan]").forEach(b => b.onclick = () => {
+    const k = b.dataset.logplan;
+    const m = S.weekPlan && S.weekPlan[todayIndex()] && S.weekPlan[todayIndex()][k];
+    if (!m) return;
+    const name = mealName(m);
+    const food = { id: "plan-" + today() + "-" + k, en: name, es: name, cal: m.cal || 0, p: m.p || 0, c: m.c || 0, f: m.f || 0 };
+    day().foods.push(food);
+    helperSay(verdict(food).grade === "good" ? "happy" : "sad", verdict(food).grade === "good" ? "happyFood" : "sadFood");
+    persist();
+  });
+  document.querySelectorAll("[data-unlog]").forEach(b => b.onclick = () => {
+    const d = day(); d.foods = d.foods.filter(f => f.id !== b.dataset.unlog); persist();
   });
   document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
     day().foods.splice(Number(b.dataset.del),1); persist();
