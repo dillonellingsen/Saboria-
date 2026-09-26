@@ -1302,7 +1302,8 @@ function targets() {
     carbs = Math.max(0, Math.round((cal - protein*4 - fat*9) / 4));
   }
   // real weekly change after floors/caps, used for the projection
-  const weekly = Math.round(Math.abs(cal - tdee) * 7 / 7700 * 100) / 100;
+  const diff = goal === "lose" ? tdee - cal : (goal === "gain" || goal === "muscle") ? cal - tdee : 0;
+  const weekly = Math.round(Math.max(0, diff) * 7 / 7700 * 100) / 100;
   return {bmr, tdee, cal, low: Math.round(cal*.9), high: Math.round(cal*1.1), protein, carbs, fat,
     water: Math.round(kg*35), restricted, weekly};
 }
@@ -1656,7 +1657,8 @@ function rateFood(food) {
   const remain = Math.max(0, targets().cal - usedCals());
   const goal = S.goal || "maintain";
   if (food.cal > remain + 80) return "bad";
-  if (goal === "lose" && food.cal > 500) return "bad";
+  // one item over 40% of the day is a lot when losing; a fixed 500 kcal flagged normal planned meals
+  if (goal === "lose" && food.cal > targets().cal * .4) return "bad";
   if (food.cal <= Math.max(220, remain * 0.3) && food.p >= 6) return "good";
   if (food.cal <= remain * 0.55) return "fair";
   return "fair";
@@ -2112,12 +2114,16 @@ async function analyzeMealAI(file) {
   openCook(t().aiLooking);
   try {
     const image = await shrinkImage(file, 1024);
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 45000);
     const r = await fetch(VISION.endpoint, {
+      signal: ctrl.signal,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image, media_type: "image/jpeg", lang: S.lang })
     });
     const j = await r.json().catch(() => ({ error: "parse" }));
+    clearTimeout(timer);
     if (!r.ok || j.error) S.scanErr = t().aiFail;
     else if (!j.is_food || !(j.items || []).length) S.scanErr = t().aiNoFood;
     else S.scrollResult = true, S.aiMeal = { confidence: j.confidence, note: j.note, items: j.items.map(i => ({ ...i, base: { ...i } })) };
@@ -2657,8 +2663,8 @@ function bind() {
   document.querySelectorAll("[data-scanfood]").forEach(b => b.onclick = () => { S.scanFood = b.dataset.scanfood; persist(); });
   document.querySelectorAll("[data-logscan]").forEach(b => b.onclick = () => {
     const f = FOODS.find(x => x.id === b.dataset.logscan);
-    if (f) day().foods.push({...f});
     const g = verdict(f).grade;
+    if (f) day().foods.push({...f});
     helperSay(g === "good" ? "happy" : "sad", g === "good" ? "happyFood" : "sadFood");
     persist();
   });
@@ -2706,8 +2712,8 @@ function bind() {
   if (logHit) logHit.onclick = () => {
     const f = (S.scanHits||[]).find(x => x.id === S.scanPick);
     if (!f) return;
-    day().foods.push({id:f.id,en:f.en,es:f.es,cal:f.cal||0,p:f.p,c:f.c,f:f.f});
     const g = verdict(f).grade;
+    day().foods.push({id:f.id,en:f.en,es:f.es,cal:f.cal||0,p:f.p,c:f.c,f:f.f});
     helperSay(g === "good" ? "happy" : "sad", g === "good" ? "happyFood" : "sadFood");
     persist();
   };
@@ -2729,11 +2735,11 @@ function bind() {
   });
   const logAi = document.getElementById("logAi");
   if (logAi) logAi.onclick = () => {
+    const total = S.aiMeal.items.reduce((a, it) => ({ cal: a.cal + it.kcal, p: a.p + it.protein_g }), { cal: 0, p: 0 });
+    const g = rateFood(total);
     const now = Date.now();
     S.aiMeal.items.forEach((it, i) => day().foods.push({ id: "ai-" + now + "-" + i, en: it.name, es: it.name,
       cal: it.kcal, p: it.protein_g, c: it.carbs_g, f: it.fat_g }));
-    const total = S.aiMeal.items.reduce((a, it) => ({ cal: a.cal + it.kcal, p: a.p + it.protein_g }), { cal: 0, p: 0 });
-    const g = rateFood(total);
     helperSay(g === "good" ? "happy" : "sad", g === "good" ? "happyFood" : "sadFood");
     S.aiMeal = null; S.scanPhoto = null; S.scanErr = "";
     persist();
@@ -2850,7 +2856,7 @@ function bind() {
     const name = mealName(m);
     const food = { id: "plan-" + today() + "-" + k, en: name, es: name, cal: m.cal || 0, p: m.p || 0, c: m.c || 0, f: m.f || 0 };
     day().foods.push(food);
-    helperSay(verdict(food).grade === "good" ? "happy" : "sad", verdict(food).grade === "good" ? "happyFood" : "sadFood");
+    helperSay("happy", "happyFood"); // it's the plan the app built for them
     persist();
   });
   document.querySelectorAll("[data-unlog]").forEach(b => b.onclick = () => {
@@ -2867,8 +2873,8 @@ function bind() {
   document.querySelectorAll("[data-logrec]").forEach(b => b.onclick = () => {
     const r = RECIPES.find(x=>x.id===b.dataset.logrec);
     const food = {id:r.id,en:r.en,es:r.es,cal:r.cal,p:r.p,c:r.c,f:r.f};
-    day().foods.push(food);
     const g = rateFood(food);
+    day().foods.push(food);
     helperSay(g === "good" ? "happy" : "sad", g === "good" ? "happyFood" : "sadFood");
     persist();
   });
@@ -2989,7 +2995,7 @@ function bind() {
     const r = RECIPES.find(x => x.id === rid);
     if (!r) return;
     if (!S.weekPlan) S.weekPlan = emptyWeek();
-    S.weekPlan[i][k] = { name: S.lang==="es"?r.es:r.en, cal: r.cal, id: r.id };
+    S.weekPlan[i][k] = portion(r, r.cal);
     persist();
   });
 

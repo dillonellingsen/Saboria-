@@ -11,3 +11,13 @@ OFF_CONTACT = "tu-correo@ejemplo.com"
 
 # The API key is a secret, never put it here. Set it with:
 #   npx wrangler secret put ANTHROPIC_API_KEY
+
+# At most 10 photo scans per minute from one IP address, so a leaked URL
+# can't drain your API credits in a loop. Raise it if real users hit it.
+[[ratelimits]]
+name = "PHOTO_LIMIT"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 10
+  period = 60

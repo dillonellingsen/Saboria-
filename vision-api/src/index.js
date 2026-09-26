@@ -125,6 +125,11 @@ export default {
     if (env.ALLOWED_ORIGIN && env.ALLOWED_ORIGIN !== "*" && origin !== env.ALLOWED_ORIGIN) {
       return json({ error: "origin" }, 403, env);
     }
+    if (env.PHOTO_LIMIT) {
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      const { success } = await env.PHOTO_LIMIT.limit({ key: ip });
+      if (!success) return json({ error: "busy" }, 429, env);
+    }
     let body;
     try { body = await request.json(); } catch { return json({ error: "bad_json" }, 400, env); }
     const { image, media_type, lang } = body || {};
