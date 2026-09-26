@@ -596,8 +596,8 @@ const ADS = {
   client: "",         // ca-pub-XXXXXXXX
   slot: ""            // ad slot id
 };
-// Meal photo recognition. Deploy vision-api/ and paste its URL here.
-// Empty = fall back to the on-device guesser (much less accurate).
+// Deploy vision-api/ and paste its URL here. It handles meal photos (Claude)
+// and Open Food Facts lookups. Empty = on-device guesser and direct lookups.
 const VISION = {
   endpoint: ""        // e.g. https://saboria-vision.<you>.workers.dev
 };
@@ -2153,7 +2153,7 @@ function offToFood(p, barcode) {
 async function lookupBarcode(code) {
   S.scanBusy = true; S.scanErr = ""; persist();
   try {
-    const r = await fetch("https://world.openfoodfacts.org/api/v2/product/" + encodeURIComponent(code) + ".json");
+    const r = await fetch(VISION.endpoint ? VISION.endpoint.replace(/\/$/, "") + "/off/product/" + encodeURIComponent(code) : "https://world.openfoodfacts.org/api/v2/product/" + encodeURIComponent(code) + ".json");
     const j = await r.json();
     if (j.status !== 1 || !j.product) {
       S.scanErr = t().scanMiss;
@@ -2174,7 +2174,7 @@ async function searchFoodName(q) {
   const local = allFoods().filter(f => (f.en+" "+f.es+" "+(f.tags||[]).join(" ")).toLowerCase().includes(q.toLowerCase()));
   let remote = [];
   try {
-    const url = "https://world.openfoodfacts.org/cgi/search.pl?search_terms=" + encodeURIComponent(q) + "&search_simple=1&action=process&json=1&page_size=8";
+    const url = VISION.endpoint ? VISION.endpoint.replace(/\/$/, "") + "/off/search?q=" + encodeURIComponent(q) : "https://world.openfoodfacts.org/cgi/search.pl?search_terms=" + encodeURIComponent(q) + "&search_simple=1&action=process&json=1&page_size=8";
     const r = await fetch(url);
     const j = await r.json();
     remote = (j.products || []).map(p => offToFood(p, p.code)).filter(f => f.en);

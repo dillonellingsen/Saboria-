@@ -6,6 +6,8 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 # The site allowed to call this API, e.g. "https://saboria.app". "*" allows any site.
 ALLOWED_ORIGIN = "*"
+# Contact Open Food Facts can reach you at if the app misbehaves (their rules ask for it).
+OFF_CONTACT = "tu-correo@ejemplo.com"
 
 # The API key is a secret, never put it here. Set it with:
 #   npx wrangler secret put ANTHROPIC_API_KEY

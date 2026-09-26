@@ -1,6 +1,9 @@
 # Saboria vision API
 
-Servidor pequeño que recibe la foto de un plato y devuelve los alimentos, los gramos estimados, las calorías y los macros. Usa la API de Claude (modelo `claude-opus-5`).
+Servidor pequeño con dos trabajos:
+
+1. Recibe la foto de un plato y devuelve los alimentos, los gramos estimados, las calorías y los macros. Usa la API de Claude (modelo `claude-opus-5`).
+2. Pasa las búsquedas de Open Food Facts (código de barras y nombre) con un `User-Agent` que identifica a Saboria, como pide su reglamento, y las guarda en caché un día. El navegador no puede poner ese encabezado por su cuenta.
 
 Existe porque la clave de la API **no puede ir en `index.html`**: cualquiera que abra la página la podría copiar y gastar tu saldo.
 
@@ -18,7 +21,8 @@ Existe porque la clave de la API **no puede ir en `index.html`**: cualquiera que
    ```js
    const VISION = { endpoint: "https://saboria-vision.<tu-usuario>.workers.dev" };
    ```
-4. Cuando tengas dominio, cambia `ALLOWED_ORIGIN` en `wrangler.toml` por tu sitio (por ejemplo `https://saboria.app`) y vuelve a correr `npx wrangler deploy`.
+4. En `wrangler.toml`, cambia `OFF_CONTACT` por tu correo. Open Food Facts lo usa para contactarte si la app causa problemas.
+5. Cuando tengas dominio, cambia `ALLOWED_ORIGIN` en `wrangler.toml` por tu sitio (por ejemplo `https://saboria.app`) y vuelve a correr `npx wrangler deploy`.
 
 Si `VISION.endpoint` está vacío, la app sigue usando el adivinador en el teléfono (MobileNet), que es mucho menos preciso.
 
@@ -41,6 +45,8 @@ Respuesta:
   "total_kcal": 195
 }
 ```
+
+`GET /off/product/<código>` y `GET /off/search?q=<texto>` devuelven la respuesta de Open Food Facts tal cual.
 
 Errores: `400 bad_image`, `413 too_big`, `403 origin`, `422 refused`, `429 busy`, `502 upstream`.
 

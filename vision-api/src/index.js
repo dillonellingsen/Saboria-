@@ -50,7 +50,7 @@ Write the food names and the note in ${language}. Keep the note to one short sen
 function cors(env) {
   return {
     "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
   };
 }
@@ -91,9 +91,35 @@ export async function analyzeMeal(client, { image, media_type, lang }) {
   return out;
 }
 
+// Open Food Facts asks apps to identify themselves with a User-Agent, which
+// browsers can't set. The app sends barcode and name lookups through here.
+async function openFoodFacts(url, env, ctx) {
+  const path = url.pathname.replace(/^\/off/, "");
+  let target;
+  if (/^\/product\/\d{6,14}$/.test(path)) {
+    target = "https://world.openfoodfacts.org/api/v2" + path + ".json";
+  } else if (path === "/search" && url.searchParams.get("q")) {
+    const q = url.searchParams.get("q").slice(0, 80);
+    target = "https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=8&search_terms=" + encodeURIComponent(q);
+  } else {
+    return json({ error: "not_found" }, 404, env);
+  }
+  const cache = caches.default;
+  const key = new Request(target);
+  const hit = await cache.match(key);
+  if (hit) return new Response(hit.body, { headers: { "Content-Type": "application/json", ...cors(env) } });
+  const r = await fetch(target, { headers: { "User-Agent": `Saboria/1.0 (${env.OFF_CONTACT || "saboria app"})` } });
+  if (!r.ok) return json({ error: "upstream" }, 502, env);
+  const body = await r.text();
+  ctx.waitUntil(cache.put(key, new Response(body, { headers: { "Cache-Control": "public, max-age=86400" } })));
+  return new Response(body, { headers: { "Content-Type": "application/json", ...cors(env) } });
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (request.method === "OPTIONS") return new Response(null, { headers: cors(env) });
+    const url = new URL(request.url);
+    if (request.method === "GET" && url.pathname.startsWith("/off/")) return openFoodFacts(url, env, ctx);
     if (request.method !== "POST") return json({ error: "method" }, 405, env);
     const origin = request.headers.get("Origin");
     if (env.ALLOWED_ORIGIN && env.ALLOWED_ORIGIN !== "*" && origin !== env.ALLOWED_ORIGIN) {
