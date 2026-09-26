@@ -105,6 +105,7 @@
       padding-bottom: calc(24px + var(--safe-bot));
     }
     .onboard h1, .onboard p { color: #fff; }
+    .onboard .bubble p { color: var(--muted); }
     .dim {
       background: rgba(16,22,18,.42);
       min-height: 100dvh;
@@ -809,7 +810,7 @@ const I = {
     burned:"Burned",
     net:"Net eaten",
     stepCalNote:"Burn estimate uses your weight × steps.",
-    calFromYou:"Target from your age, weight, height, activity, goal, drinking and smoking.",
+    calFromYou:"Target from your age, weight, height, daily movement, strength training, goal and speed.",
     fromZero:"Create my plan",
     planZero:"Add each meal from scratch.",
     planHint:"Build your week or use a suggested week.",
@@ -935,7 +936,7 @@ const I = {
     burned:"Quemadas",
     net:"Neto comido",
     stepCalNote:"La quema se estima con tu peso × pasos.",
-    calFromYou:"Meta según edad, peso, estatura, actividad, objetivo, alcohol y tabaco.",
+    calFromYou:"Meta según edad, peso, estatura, movimiento diario, entrenamiento de fuerza, objetivo y velocidad.",
     fromZero:"Crear mi plan",
     planZero:"Arma cada comida desde cero.",
     planHint:"Arma tu semana o usa una sugerida.",
@@ -2314,7 +2315,7 @@ function more() {
       <div class="tiny">${T.calories}</div>
       <div class="big">${tg.cal}</div>
       <p class="muted">${T.calFromYou || ""}</p>
-      <div class="muted">P ${tg.protein}g · C ${tg.carbs}g · F ${tg.fat}g · water ${tg.water} ml</div>
+      <div class="muted">P ${tg.protein}g · C ${tg.carbs}g · F ${tg.fat}g · ${T.water} ${isUS() ? Math.round(tg.water/29.5735) + " " + T.oz : tg.water + " " + T.ml}</div>
     </div>
     <div class="card">
       <div class="tiny">${T.settings}</div>
