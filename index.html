@@ -493,9 +493,9 @@
                  radial-gradient(circle at 88% 85%, rgba(47,107,60,.55), transparent 50%), #0E1911; }
     .cook-load.out { opacity:0; visibility:hidden; pointer-events:none; transition:opacity .35s ease, visibility 0s .35s; }
     .cook-load p { margin:0; padding:0 24px; font-size:21px; font-weight:800; text-align:center; }
-    .cook-art { position:relative; width:230px; height:170px; }
-    .cook-art svg { position:absolute; left:0; bottom:0; width:230px; height:auto; transform-origin:86% 70%; animation:panToss 1.2s ease-in-out infinite; }
-    .cook-art .fd { position:absolute; bottom:62px; left:var(--x); font-size:26px; line-height:1; animation:foodToss 1.2s ease-in-out infinite; animation-delay:var(--d); }
+    .cook-art { position:relative; width:300px; max-width:92vw; height:190px; }
+    .cook-art svg { position:absolute; left:0; bottom:0; width:100%; height:auto; overflow:visible; transform-origin:74% 62%; animation:panToss 1.2s ease-in-out infinite; }
+    .cook-art .fd { position:absolute; bottom:78px; left:var(--x); font-size:26px; line-height:1; animation:foodToss 1.2s ease-in-out infinite; animation-delay:var(--d); }
     @keyframes panToss { 0%,100% { transform:rotate(0); } 30% { transform:rotate(7deg) translateY(3px); } 50% { transform:rotate(-6deg); } 70% { transform:rotate(0); } }
     @keyframes foodToss { 0%,30%,100% { transform:translateY(0) rotate(0); } 62% { transform:translateY(-70px) rotate(var(--r)); } }
     @media (prefers-reduced-motion: reduce) { .cook-art svg, .cook-art .fd { animation:none; } }
@@ -562,17 +562,28 @@
     <span class="fd" style="--x:70px;--d:.06s;--r:30deg">🌶️</span>
     <span class="fd" style="--x:104px;--d:.12s;--r:-25deg">🍤</span>
     <span class="fd" style="--x:58px;--d:.18s;--r:50deg">🍄</span>
-    <svg viewBox="0 0 230 90">
-      <rect x="138" y="42" width="58" height="11" rx="5.5" fill="#5a5a5a" transform="rotate(-6 138 47)"/>
-      <rect x="140" y="43" width="54" height="3" rx="1.5" fill="#7a7a7a" transform="rotate(-6 138 47)"/>
-      <ellipse cx="78" cy="52" rx="70" ry="24" fill="#2b2b2b"/>
-      <ellipse cx="78" cy="46" rx="66" ry="19" fill="#4a4a4a"/>
-      <ellipse cx="78" cy="48" rx="56" ry="14" fill="#1f1f1f"/>
-      <rect x="170" y="31" width="34" height="32" rx="13" fill="#F1C27D"/>
-      <path d="M173 42 h13 M173 49 h13 M173 56 h12" stroke="#D39A5E" stroke-width="2" stroke-linecap="round"/>
-      <path d="M186 33 q-12 2 -14 9 q8 1 16 -2 z" fill="#E8B06C"/>
-      <rect x="199" y="26" width="26" height="40" rx="9" fill="#FFFDF8"/>
-      <rect x="199" y="26" width="7" height="40" rx="3.5" fill="#E4D9C5"/>
+    <svg viewBox="0 0 320 120" overflow="visible">
+      <defs>
+        <linearGradient id="slv" gradientUnits="userSpaceOnUse" x1="240" y1="0" x2="640" y2="0">
+          <stop offset="0" stop-color="#FFFDF8"/><stop offset=".45" stop-color="#F3EEE4"/><stop offset="1" stop-color="#F3EEE4" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- forearm in a chef sleeve, reaching in from off screen -->
+      <path d="M240 46 C 330 34, 470 14, 640 -6 L 640 50 C 470 66, 330 82, 240 88 Z" fill="url(#slv)"/>
+      <path d="M270 56 Q300 58 330 50 M290 76 Q320 76 350 68 M380 44 Q410 44 440 36" stroke="#E4D9C5" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- handle -->
+      <rect x="138" y="62" width="70" height="11" rx="5.5" fill="#5a5a5a" transform="rotate(-6 138 67)"/>
+      <rect x="140" y="63" width="66" height="3" rx="1.5" fill="#7a7a7a" transform="rotate(-6 138 67)"/>
+      <!-- pan -->
+      <ellipse cx="78" cy="72" rx="70" ry="24" fill="#2b2b2b"/>
+      <ellipse cx="78" cy="66" rx="66" ry="19" fill="#4a4a4a"/>
+      <ellipse cx="78" cy="68" rx="56" ry="14" fill="#1f1f1f"/>
+      <!-- wrist, cuff and fist around the handle -->
+      <rect x="214" y="54" width="30" height="26" rx="10" fill="#E9B676"/>
+      <rect x="232" y="44" width="16" height="46" rx="6" fill="#EDE6D8"/>
+      <rect x="186" y="48" width="36" height="34" rx="14" fill="#F1C27D"/>
+      <path d="M190 60 h14 M190 67 h14 M190 74 h13" stroke="#D39A5E" stroke-width="2" stroke-linecap="round"/>
+      <path d="M204 50 q-14 2 -16 10 q9 1 18 -3 z" fill="#E8B06C"/>
     </svg>
   </div>
   <p>Saboria</p>
