@@ -473,7 +473,9 @@
     .opt.on .ic { background:#fff; }
     .opt b { display:block; font-size:15px; }
     .opt small { display:block; color:var(--muted); font-size:13px; margin-top:2px; }
-    .opt.on { background:var(--goldsoft); border-color:var(--gold); }
+    .opt.on { background:var(--goldsoft); border-color:var(--gold); animation:pick .28s ease-out; }
+    @keyframes pick { 0% { transform:scale(.97); } 100% { transform:scale(1); } }
+    @media (prefers-reduced-motion: reduce) { .opt.on { animation:none; } }
     .bubble .hint, .hint { font-size:13px; color:var(--muted); margin-top:6px; line-height:1.35; }
     .warn { margin-top:12px; padding:10px 12px; font-size:13px; line-height:1.4; background:#FFF4E5; border:1px solid #F0C98A; border-radius:12px; }
     .res-kcal { font-size:34px; font-weight:800; text-align:center; color:var(--green); }
@@ -493,12 +495,42 @@
                  radial-gradient(circle at 88% 85%, rgba(47,107,60,.55), transparent 50%), #0E1911; }
     .cook-load.out { opacity:0; visibility:hidden; pointer-events:none; transition:opacity .35s ease, visibility 0s .35s; }
     .cook-load p { margin:0; padding:0 24px; font-size:21px; font-weight:800; text-align:center; }
-    .cook-art { position:relative; width:300px; max-width:92vw; height:190px; }
-    .cook-art svg { position:absolute; left:0; bottom:0; width:100%; height:auto; overflow:visible; transform-origin:74% 62%; animation:panToss 1.2s ease-in-out infinite; }
-    .cook-art .fd { position:absolute; bottom:78px; left:var(--x); font-size:26px; line-height:1; animation:foodToss 1.2s ease-in-out infinite; animation-delay:var(--d); }
-    @keyframes panToss { 0%,100% { transform:rotate(0); } 30% { transform:rotate(7deg) translateY(3px); } 50% { transform:rotate(-6deg); } 70% { transform:rotate(0); } }
-    @keyframes foodToss { 0%,30%,100% { transform:translateY(0) rotate(0); } 62% { transform:translateY(-70px) rotate(var(--r)); } }
-    @media (prefers-reduced-motion: reduce) { .cook-art svg, .cook-art .fd { animation:none; } }
+    .cook-art { position:relative; width:270px; max-width:88vw; height:250px; perspective:700px; isolation:isolate; }
+    .pan3d { position:absolute; left:0; right:0; bottom:26px; transform-style:preserve-3d; transform-origin:40% 70%; animation:panFlip 1.6s cubic-bezier(.45,0,.3,1) infinite; }
+    .pan3d svg { display:block; width:100%; height:auto; overflow:visible; filter:drop-shadow(0 10px 12px rgba(0,0,0,.45)); }
+    .pan3d .oil { animation:oil 1.6s ease-in-out infinite; }
+    .cook-art .fd { position:absolute; left:var(--x); top:22px; font-size:30px; line-height:1; will-change:transform;
+      filter:drop-shadow(0 4px 3px rgba(0,0,0,.35)); animation:flip 1.6s cubic-bezier(.3,.1,.3,1) infinite; animation-delay:var(--d); }
+    .flames { position:absolute; left:50%; bottom:12px; width:140px; height:34px; margin-left:-92px; z-index:-1; display:flex; justify-content:space-between; align-items:flex-end; }
+    .flames i { width:16px; height:26px; border-radius:50% 50% 45% 45% / 65% 65% 35% 35%;
+      background:radial-gradient(ellipse at 50% 85%, #7fc4ff 0 18%, #fff3b0 24%, #ffb13b 48%, #ff6a1a 70%, rgba(255,80,20,0) 72%);
+      transform-origin:50% 100%; animation:flicker .32s ease-in-out infinite alternate; filter:blur(.4px); }
+    .flames i:nth-child(2) { animation-delay:.1s; height:30px; } .flames i:nth-child(3) { animation-delay:.2s; height:34px; }
+    .flames i:nth-child(4) { animation-delay:.05s; height:30px; } .flames i:nth-child(5) { animation-delay:.15s; }
+    .flames::after { content:""; position:absolute; left:-14px; right:-14px; bottom:-8px; height:12px; border-radius:50%; background:radial-gradient(ellipse, #3a3a3a 0 55%, #1a1a1a 70%, transparent 72%); z-index:-1; }
+    .steam { position:absolute; left:60px; top:40px; width:120px; height:120px; }
+    .steam i { position:absolute; bottom:0; width:26px; height:60px; border-radius:50%; background:radial-gradient(ellipse, rgba(255,255,255,.35), rgba(255,255,255,0) 70%);
+      filter:blur(6px); opacity:0; animation:steam 2.4s ease-out infinite; }
+    .steam i:nth-child(1) { left:10px; } .steam i:nth-child(2) { left:48px; animation-delay:.8s; } .steam i:nth-child(3) { left:86px; animation-delay:1.6s; }
+    @keyframes panFlip {
+      0%, 100% { transform:translateY(0) rotateX(0) rotateZ(0); }
+      20% { transform:translateY(6px) rotateX(14deg) rotateZ(2deg); }
+      32% { transform:translateY(-14px) rotateX(-12deg) rotateZ(-7deg); }
+      48% { transform:translateY(-4px) rotateX(-4deg) rotateZ(-2deg); }
+      70% { transform:translateY(3px) rotateX(6deg) rotateZ(1deg); }
+    }
+    @keyframes flip {
+      0%, 22% { transform:translate3d(0,0,0) rotateY(0) rotateZ(0) scale(.92); }
+      34% { transform:translate3d(calc(var(--dx) * .5), calc(var(--h) * -.8), 40px) rotateY(180deg) rotateZ(calc(var(--r) * .5)) scale(1.18); }
+      50% { transform:translate3d(var(--dx), calc(var(--h) * -1), 70px) rotateY(300deg) rotateZ(calc(var(--r) * .8)) scale(1.32); }
+      68% { transform:translate3d(calc(var(--dx) * .4), -20px, 20px) rotateY(360deg) rotateZ(var(--r)) scale(1.05); }
+      78% { transform:translate3d(0, 4px, 0) rotateY(360deg) rotateZ(var(--r)) scale(.9, .96); }
+      86%, 100% { transform:translate3d(0,0,0) rotateY(360deg) rotateZ(var(--r)) scale(.92); }
+    }
+    @keyframes flicker { from { transform:scaleY(.82) scaleX(1.05); opacity:.85; } to { transform:scaleY(1.12) scaleX(.94); opacity:1; } }
+    @keyframes steam { 0% { transform:translateY(20px) scale(.6); opacity:0; } 30% { opacity:.9; } 100% { transform:translateY(-80px) scale(1.6); opacity:0; } }
+    @keyframes oil { 0%, 100% { opacity:.12; } 50% { opacity:.3; } }
+    @media (prefers-reduced-motion: reduce) { .pan3d, .cook-art .fd, .flames i, .steam i, .pan3d .oil { animation:none; } }
     /* Today screen v2 + nav (ui-ux-pro-max pass) */
     .tabs { grid-template-columns: repeat(5, 1fr) !important; }
     .tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:56px; font-size:11px; cursor:pointer; touch-action:manipulation; }
@@ -572,33 +604,36 @@
 <body>
 <div id="boot" class="cook-load" role="status" aria-live="polite">
   <div class="cook-art" aria-hidden="true">
-    <span class="fd" style="--x:34px;--d:0s;--r:-40deg">🥦</span>
-    <span class="fd" style="--x:70px;--d:.06s;--r:30deg">🌶️</span>
-    <span class="fd" style="--x:104px;--d:.12s;--r:-25deg">🍤</span>
-    <span class="fd" style="--x:58px;--d:.18s;--r:50deg">🍄</span>
-    <svg viewBox="0 0 320 120" overflow="visible">
-      <defs>
-        <linearGradient id="slv" gradientUnits="userSpaceOnUse" x1="240" y1="0" x2="640" y2="0">
-          <stop offset="0" stop-color="#FFFDF8"/><stop offset=".45" stop-color="#F3EEE4"/><stop offset="1" stop-color="#F3EEE4" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <!-- forearm in a chef sleeve, reaching in from off screen -->
-      <path d="M240 46 C 330 34, 470 14, 640 -6 L 640 50 C 470 66, 330 82, 240 88 Z" fill="url(#slv)"/>
-      <path d="M270 56 Q300 58 330 50 M290 76 Q320 76 350 68 M380 44 Q410 44 440 36" stroke="#E4D9C5" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <!-- handle -->
-      <rect x="138" y="62" width="70" height="11" rx="5.5" fill="#5a5a5a" transform="rotate(-6 138 67)"/>
-      <rect x="140" y="63" width="66" height="3" rx="1.5" fill="#7a7a7a" transform="rotate(-6 138 67)"/>
-      <!-- pan -->
-      <ellipse cx="78" cy="72" rx="70" ry="24" fill="#2b2b2b"/>
-      <ellipse cx="78" cy="66" rx="66" ry="19" fill="#4a4a4a"/>
-      <ellipse cx="78" cy="68" rx="56" ry="14" fill="#1f1f1f"/>
-      <!-- wrist, cuff and fist around the handle -->
-      <rect x="214" y="54" width="30" height="26" rx="10" fill="#E9B676"/>
-      <rect x="232" y="44" width="16" height="46" rx="6" fill="#EDE6D8"/>
-      <rect x="186" y="48" width="36" height="34" rx="14" fill="#F1C27D"/>
-      <path d="M190 60 h14 M190 67 h14 M190 74 h13" stroke="#D39A5E" stroke-width="2" stroke-linecap="round"/>
-      <path d="M204 50 q-14 2 -16 10 q9 1 18 -3 z" fill="#E8B06C"/>
-    </svg>
+    <div class="steam"><i></i><i></i><i></i></div>
+    <div class="pan3d">
+      <svg viewBox="0 0 270 120" overflow="visible">
+        <defs>
+          <radialGradient id="pBody" cx="45%" cy="30%" r="75%"><stop offset="0" stop-color="#707070"/><stop offset=".55" stop-color="#2d2d2d"/><stop offset="1" stop-color="#121212"/></radialGradient>
+          <linearGradient id="pRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9b9b9"/><stop offset=".45" stop-color="#4a4a4a"/><stop offset="1" stop-color="#1b1b1b"/></linearGradient>
+          <radialGradient id="pIn" cx="42%" cy="38%" r="70%"><stop offset="0" stop-color="#3d3d3d"/><stop offset="1" stop-color="#0d0d0d"/></radialGradient>
+          <linearGradient id="pWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b07a48"/><stop offset=".5" stop-color="#7a4f2b"/><stop offset="1" stop-color="#4a2e17"/></linearGradient>
+          <radialGradient id="pGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ff9a3c" stop-opacity=".55"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+        </defs>
+        <ellipse cx="110" cy="96" rx="110" ry="22" fill="url(#pGlow)"/>
+        <g transform="rotate(-7 200 58)">
+          <rect x="196" y="52" width="22" height="10" rx="3" fill="#3a3a3a"/>
+          <rect x="214" y="49" width="56" height="16" rx="8" fill="url(#pWood)"/>
+          <rect x="220" y="52" width="40" height="3" rx="1.5" fill="#d9a46f" opacity=".6"/>
+          <circle cx="262" cy="57" r="2.4" fill="#2a1a0d"/>
+        </g>
+        <ellipse cx="110" cy="64" rx="98" ry="34" fill="url(#pBody)"/>
+        <ellipse cx="110" cy="54" rx="98" ry="30" fill="url(#pRim)"/>
+        <ellipse cx="110" cy="56" rx="86" ry="24" fill="url(#pIn)"/>
+        <path d="M40 50 Q70 36 112 34" stroke="#fff" stroke-opacity=".22" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse class="oil" cx="110" cy="58" rx="60" ry="12" fill="#e8b04a" opacity=".12"/>
+      </svg>
+      <span class="fd" style="--x:42px;--dx:-26px;--h:118px;--d:0s;--r:-280deg">🥦</span>
+      <span class="fd" style="--x:78px;--dx:-6px;--h:140px;--d:.07s;--r:320deg">🍤</span>
+      <span class="fd" style="--x:112px;--dx:10px;--h:126px;--d:.12s;--r:-360deg">🌶️</span>
+      <span class="fd" style="--x:146px;--dx:24px;--h:108px;--d:.04s;--r:300deg">🍄</span>
+      <span class="fd" style="--x:92px;--dx:2px;--h:96px;--d:.16s;--r:-240deg">🧅</span>
+    </div>
+    <div class="flames"><i></i><i></i><i></i><i></i><i></i></div>
   </div>
   <p>Saboria</p>
 </div>
@@ -1094,7 +1129,7 @@ Object.assign(I.en, {
   cook:"Cook", genWeek:"Generate my week", swap:"Swap", portion:"portion",
   noRecipes:"No recipes fit your filters for this meal yet. Add one by hand.",
   planAuto:"Portions are scaled so each day lands near your target.",
-  perDay:"day", alcohol:"Alcohol", alcQ:"Do you drink alcohol?", alcHint:"It doesn’t change your calorie target. We just count it, like food.",
+  tapToGo:"Tap an answer to continue", perDay:"day", alcohol:"Alcohol", alcQ:"Do you drink alcohol?", alcHint:"It doesn’t change your calorie target. We just count it, like food.",
   alcNo:"No", alcOcc:"Now and then", alcOccD:"Parties, weekends", alcWeek:"A few times a week", alcWeekD:"A beer or wine with dinner", alcDaily:"Most days",
   alcNote:"Alcohol counts toward your calories. Log it on Today.",
   dr_beer:"Beer", dr_light:"Light beer", dr_wine:"Wine", dr_spirit:"Shot (tequila, mezcal, whisky)", dr_cocktail:"Cocktail or michelada",
@@ -1159,7 +1194,7 @@ Object.assign(I.es, {
   cook:"Cocinar", genWeek:"Generar mi semana", swap:"Cambiar", portion:"porción",
   noRecipes:"Todavía no hay recetas que cumplan tus filtros para esta comida. Agrega una a mano.",
   planAuto:"Ajustamos las porciones para que cada día quede cerca de tu meta.",
-  perDay:"día", alcohol:"Alcohol", alcQ:"¿Tomas alcohol?", alcHint:"No cambia tu meta de calorías. Solo lo contamos, igual que la comida.",
+  tapToGo:"Toca una respuesta para seguir", perDay:"día", alcohol:"Alcohol", alcQ:"¿Tomas alcohol?", alcHint:"No cambia tu meta de calorías. Solo lo contamos, igual que la comida.",
   alcNo:"No", alcOcc:"De vez en cuando", alcOccD:"Fiestas, fines de semana", alcWeek:"Varias veces por semana", alcWeekD:"Una cerveza o vino con la cena", alcDaily:"Casi todos los días",
   alcNote:"El alcohol cuenta en tus calorías. Regístralo en Hoy.",
   dr_beer:"Cerveza", dr_light:"Cerveza light", dr_wine:"Vino", dr_spirit:"Shot (tequila, mezcal, whisky)", dr_cocktail:"Coctel o michelada",
@@ -1414,6 +1449,8 @@ function authUI() {
   </div>`;
 }
 
+// step -> the answer key that, once picked, completes the step
+const AUTO_STEPS = { gender:"sex", activity:"activity", strength:"strength", alcohol:"drink", goal:"goal", speed:"speed", diet:"dietPref" };
 function obSteps() {
   const s = ["gender","name","age","height","weight","activity","strength","health","alcohol","goal"];
   if (S.goal && S.goal !== "maintain") s.push("goalWeight","speed");
@@ -1561,7 +1598,7 @@ function onboardUI() {
         ${q ? `<h3>${q}</h3>` : ""}
         ${body}
       </div>
-      <button class="btn" id="next" ${can?"":"disabled"}>${last ? T.makePlan : T.continue}</button>
+      ${AUTO_STEPS[S.step] ? `<div class="hint" style="text-align:center;color:#fff;opacity:.85">${T.tapToGo}</div>` : `<button class="btn" id="next" ${can?"":"disabled"}>${last ? T.makePlan : T.continue}</button>`}
     </div>
   </div>`;
 }
@@ -2651,7 +2688,17 @@ function more() {
 }
 
 function bind() {
-  document.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { S[b.dataset.set] = b.dataset.val; persist(); });
+  document.querySelectorAll("[data-set]").forEach(b => b.onclick = () => {
+    S[b.dataset.set] = b.dataset.val;
+    // single-choice onboarding questions move on by themselves after a short beat
+    if (!S.onboarded && AUTO_STEPS[S.step] === b.dataset.set) {
+      if (window._autoNext) return;
+      persist();
+      window._autoNext = setTimeout(() => { window._autoNext = null; if (window._goNext) window._goNext(); }, 280);
+      return;
+    }
+    persist();
+  });
   document.querySelectorAll("[data-diet]").forEach(b => b.onclick = () => {
     const v=b.dataset.diet;
     if (v==="none") S.diets=["none"];
@@ -3038,6 +3085,7 @@ function bind() {
     const [i, k] = b.dataset.swap.split("-");
     swapSlot(Number(i), k); persist();
   });
+  window._goNext = goNext;
   function bindInput(el) {
     if (!el) return;
     el.oninput = () => { grabField(); if (next) next.disabled = !canContinue(); };
