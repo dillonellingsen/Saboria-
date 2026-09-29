@@ -553,6 +553,20 @@
     .gitem.done .gname { text-decoration:line-through; color:var(--muted); }
     .gname { flex:1; font-weight:700; }
     .gqty { color:var(--muted); font-variant-numeric:tabular-nums; }
+    .sec-title { font-size:18px; display:flex; align-items:center; gap:8px; margin:0; }
+    .alc h2 .ico { color:#B7791F; }
+    .drow { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); }
+    .drow:last-of-type { border-bottom:0; }
+    .dtxt { flex:1; min-width:0; }
+    .dtxt b { display:block; font-size:15px; }
+    .dtxt small { color:var(--muted); }
+    .dcount { width:34px; text-align:center; font-size:18px; font-variant-numeric:tabular-nums; }
+    .round:disabled { opacity:.4; cursor:default; }
+    .alc-add { display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:8px; }
+    .alc-add input { margin:0; min-width:0; }
+    .alc-add .btn { width:auto; margin:0; padding:12px 18px; }
+    .alc select { display:block; width:100%; min-width:0; min-height:44px; padding:0 10px; font:inherit; border:1px solid var(--line); border-radius:12px; background:#fff; color:var(--ink); }
+    .alc-sum { margin-top:12px; font-weight:700; font-size:14px; }
   </style>
 </head>
 <body>
@@ -1080,7 +1094,12 @@ Object.assign(I.en, {
   cook:"Cook", genWeek:"Generate my week", swap:"Swap", portion:"portion",
   noRecipes:"No recipes fit your filters for this meal yet. Add one by hand.",
   planAuto:"Portions are scaled so each day lands near your target.",
-  perDay:"day", groceryHint:"Everything for the 7 days of your plan, rounded up to what you can buy. Tap to check off.", groceryEmpty:"Generate your week first and the list fills in by itself.", alreadyHave:"Already in your kitchen", aisleProduce:"Fruits and vegetables", aisleProtein:"Protein and dairy", aislePantry:"Pantry", uPcs:"pcs", uSlices:"slices",
+  perDay:"day", alcohol:"Alcohol", alcQ:"Do you drink alcohol?", alcHint:"It doesn’t change your calorie target. We just count it, like food.",
+  alcNo:"No", alcOcc:"Now and then", alcOccD:"Parties, weekends", alcWeek:"A few times a week", alcWeekD:"A beer or wine with dinner", alcDaily:"Most days",
+  alcNote:"Alcohol counts toward your calories. Log it on Today.",
+  dr_beer:"Beer", dr_light:"Light beer", dr_wine:"Wine", dr_spirit:"Shot (tequila, mezcal, whisky)", dr_cocktail:"Cocktail or michelada",
+  otherAmount:"Other amount", stdDrinks:"standard drinks", ofAlcohol:"of alcohol", thisWeek:"this week",
+  alcOver:"That’s over moderate drinking for today (up to {n} a day, per the CDC).", alcPreg:"During pregnancy or breastfeeding the safe amount is none.", groceryHint:"Everything for the 7 days of your plan, rounded up to what you can buy. Tap to check off.", groceryEmpty:"Generate your week first and the list fills in by itself.", alreadyHave:"Already in your kitchen", aisleProduce:"Fruits and vegetables", aisleProtein:"Protein and dairy", aislePantry:"Pantry", uPcs:"pcs", uSlices:"slices",
   segCode:"Barcode", segPhoto:"Meal photo", segSearch:"Search", typeCode:"Or type the number under the barcode", searchLabel:"Food or product name", photoHint:"Take a photo of the plate from above, with all the food in frame.", takePhoto:"Take photo",
   needHttps:"Accounts need a secure connection. Open Saboria from its https:// address.", scanShort:"Scan", navLabel:"Main", kcalLeft:"kcal left", kcalOver:"kcal over", goalShort:"Goal", eatenShort:"Eaten",
   todayMeals:"Today’s meals", seePlan:"See plan", noMealPlanned:"Nothing planned", undo:"Undo", ateThis:"I ate this",
@@ -1140,7 +1159,12 @@ Object.assign(I.es, {
   cook:"Cocinar", genWeek:"Generar mi semana", swap:"Cambiar", portion:"porción",
   noRecipes:"Todavía no hay recetas que cumplan tus filtros para esta comida. Agrega una a mano.",
   planAuto:"Ajustamos las porciones para que cada día quede cerca de tu meta.",
-  perDay:"día", groceryHint:"Todo lo de los 7 días de tu plan, redondeado a lo que puedes comprar. Toca para tachar.", groceryEmpty:"Primero genera tu semana y la lista se llena sola.", alreadyHave:"Ya lo tienes en tu cocina", aisleProduce:"Frutas y verduras", aisleProtein:"Proteínas y lácteos", aislePantry:"Despensa", uPcs:"pzas", uSlices:"rebanadas",
+  perDay:"día", alcohol:"Alcohol", alcQ:"¿Tomas alcohol?", alcHint:"No cambia tu meta de calorías. Solo lo contamos, igual que la comida.",
+  alcNo:"No", alcOcc:"De vez en cuando", alcOccD:"Fiestas, fines de semana", alcWeek:"Varias veces por semana", alcWeekD:"Una cerveza o vino con la cena", alcDaily:"Casi todos los días",
+  alcNote:"El alcohol cuenta en tus calorías. Regístralo en Hoy.",
+  dr_beer:"Cerveza", dr_light:"Cerveza light", dr_wine:"Vino", dr_spirit:"Shot (tequila, mezcal, whisky)", dr_cocktail:"Coctel o michelada",
+  otherAmount:"Otra cantidad", stdDrinks:"bebidas estándar", ofAlcohol:"de alcohol", thisWeek:"esta semana",
+  alcOver:"Hoy pasas del consumo moderado (hasta {n} al día, según los CDC).", alcPreg:"En embarazo o lactancia, la cantidad segura es cero.", groceryHint:"Todo lo de los 7 días de tu plan, redondeado a lo que puedes comprar. Toca para tachar.", groceryEmpty:"Primero genera tu semana y la lista se llena sola.", alreadyHave:"Ya lo tienes en tu cocina", aisleProduce:"Frutas y verduras", aisleProtein:"Proteínas y lácteos", aislePantry:"Despensa", uPcs:"pzas", uSlices:"rebanadas",
   segCode:"Código", segPhoto:"Foto del plato", segSearch:"Buscar", typeCode:"O escribe los números debajo del código", searchLabel:"Nombre del alimento o producto", photoHint:"Toma la foto del plato desde arriba, con toda la comida a la vista.", takePhoto:"Tomar foto",
   needHttps:"Las cuentas necesitan conexión segura. Abre Saboria desde su dirección https://.", scanShort:"Escanear", navLabel:"Principal", kcalLeft:"kcal restantes", kcalOver:"kcal de más", goalShort:"Meta", eatenShort:"Comido",
   todayMeals:"Comidas de hoy", seePlan:"Ver plan", noMealPlanned:"Nada planeado", undo:"Deshacer", ateThis:"Me lo comí",
@@ -1249,7 +1273,7 @@ function t() { return I[S.lang] || I.en; }
 function ymd(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
 function today() { return ymd(new Date()); }
 function day() {
-  if (!S.logs[today()]) S.logs[today()] = { foods:[], water:0, steps:0, cans:0, bottles:0 };
+  if (!S.logs[today()]) S.logs[today()] = { foods:[], water:0, steps:0, drinks:{} };
   return S.logs[today()];
 }
 function helloByHour() {
@@ -1391,7 +1415,7 @@ function authUI() {
 }
 
 function obSteps() {
-  const s = ["gender","name","age","height","weight","activity","strength","health","goal"];
+  const s = ["gender","name","age","height","weight","activity","strength","health","alcohol","goal"];
   if (S.goal && S.goal !== "maintain") s.push("goalWeight","speed");
   return s.concat(["result","diet","allergies","meals","pantryPick"]);
 }
@@ -1452,6 +1476,7 @@ function resultBody() {
       <div class="hint">${T.reachBy} ${fmtW(goalKg)} ${T.by} ${new Date(Date.now()+weeks*7*864e5).toLocaleDateString(S.lang==="es"?"es-MX":"en-US",{month:"long",day:"numeric",year:"numeric"})}. ${T.estimate}</div>` : ""}
     <div class="plan-row"><div><b>${T.burns}</b><div class="muted">${T.whatTDEE}</div></div><div><b>${tg.tdee}</b></div></div>
     <div class="plan-row"><div><b>${T.water} ${waterTxt}</b><div class="muted">${T.waterWhy}</div></div></div>
+    ${S.drink && S.drink !== "no" ? `<div class="hint">${T.alcNote}</div>` : ""}
     <div class="hint">${T.notMedical}</div>`;
 }
 function onboardUI() {
@@ -1461,7 +1486,7 @@ function onboardUI() {
   const q = {
     gender: S.sex ? "" : T.genderQ, name: T.name, age: T.age, height: T.height, weight: T.weight,
     activity: T.lifeQ, strength: T.strengthQ, health: T.healthQ, goal: T.goal, goalWeight: T.goalWQ,
-    speed: T.speedQ, result: T.resultQ, diet: T.dietQ, allergies: T.allergyQ, meals: T.mealsQ, pantryPick: T.pantryQ
+    speed: T.speedQ, alcohol: T.alcQ, result: T.resultQ, diet: T.dietQ, allergies: T.allergyQ, meals: T.mealsQ, pantryPick: T.pantryQ
   }[S.step];
   let body = "";
   if (S.step==="gender") body = chips([["male",T.male],["female",T.female]], S.sex, "sex");
@@ -1497,6 +1522,8 @@ function onboardUI() {
   if (S.step==="health") body = `<div class="hint" style="margin:0 0 4px">${T.healthHint}</div>` + opts([
     ["none","check",T.hNone],["pregnant","baby",T.hPreg],["diabetes","drop",T.hDiab],["kidney","bean",T.hKidney],
     ["ed","brain",T.hEd],["other","plus",T.hOther]], null, "health", true);
+  if (S.step==="alcohol") body = `<div class="hint" style="margin:0 0 4px">${T.alcHint}</div>` + opts([
+    ["no","x",T.alcNo],["occasional","glass",T.alcOcc,T.alcOccD],["weekly","beer",T.alcWeek,T.alcWeekD],["daily","beer",T.alcDaily]], S.drink, "drink");
   if (S.step==="goal") body = opts([["lose","down",T.goalLose],["maintain","balance",T.goalKeep],["gain","up",T.goalGain],["muscle","dumbbell",T.goalMuscle]], S.goal, "goal");
   if (S.step==="speed") {
     const g = S.goal === "lose" ? "lose" : "gain";
@@ -1561,6 +1588,7 @@ function canContinue() {
   if (s==="activity") return !!S.activity;
   if (s==="strength") return !!S.strength;
   if (s==="health") return (S.health||[]).length > 0;
+  if (s==="alcohol") return ["no","occasional","weekly","daily"].includes(S.drink);
   if (s==="goal") return !!S.goal;
   if (s==="meals") return (S.meals||[]).length >= 2;
   return true;
@@ -1574,15 +1602,35 @@ function normalize() {
   if (!S.meals || !S.meals.length) S.meals = ["b","l","n"];
   if (!S.health) S.health = [];
   if (!S.speed) S.speed = "rec";
+  // old answers from the first onboarding
+  S.drink = { social:"occasional", sometimes:"weekly", yes:"daily" }[S.drink] || S.drink;
   // the floating helper covered content on Today; it now starts off and can be turned on in More
   if (!S.uiV2) { S.uiV2 = true; S.helperHidden = true; }
   if (!S.onboarded && !obSteps().includes(S.step)) S.step = obSteps()[0];
 }
 
-function beerCals() {
-  const d = day();
-  return (d.cans || 0) * 150 + (d.bottles || 0) * 160;
+// Typical serving per drink. kcal from USDA-style averages; alcohol grams = ml x ABV x 0.789.
+const DRINKS = [
+  { id:"beer",     ml:355, abv:4.5, kcal:150 },
+  { id:"light",    ml:355, abv:4.2, kcal:100 },
+  { id:"wine",     ml:150, abv:12,  kcal:125 },
+  { id:"spirit",   ml:45,  abv:40,  kcal:100 },
+  { id:"cocktail", ml:250, abv:8,   kcal:220 }
+];
+const STD_DRINK_G = 14; // one US standard drink
+function drinksOf(d) {
+  d = d || day();
+  if (!d.drinks) d.drinks = {};
+  if (d.cans || d.bottles) { d.drinks.beer = (d.drinks.beer || 0) + (d.cans || 0) + (d.bottles || 0); d.cans = 0; d.bottles = 0; }
+  return d.drinks;
 }
+function drinkTotals(d) {
+  const dr = drinksOf(d);
+  let kcal = 0, grams = 0, n = 0;
+  DRINKS.forEach(x => { const c = dr[x.id] || 0; n += c; kcal += c * x.kcal; grams += c * x.ml * x.abv / 100 * .789; });
+  return { n, kcal: Math.round(kcal), grams: Math.round(grams), std: Math.round(grams / STD_DRINK_G * 10) / 10 };
+}
+function beerCals() { return drinkTotals().kcal; }
 function usedCals() { return day().foods.reduce((s,f)=>s+f.cal,0) + beerCals(); }
 function burnFromSteps(steps) {
   const kg = Number(S.weight) || 70;
@@ -1844,6 +1892,8 @@ const ICONS = {
   moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
   apple: '<path d="M12 7c-2-2-7-1-7 5s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9s-5-7-7-5z"/><path d="M12 7c0-2 1-4 3-4"/>',
   camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
+  glass: '<path d="M7 3h10l-1 7a4 4 0 0 1-8 0z"/><path d="M12 14v6M8 21h8"/>',
+  beer: '<path d="M5 8h10v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/><path d="M15 11h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2M5 8a3 3 0 0 1 3-4 3 3 0 0 1 4 0 3 3 0 0 1 3 4"/>',
   cookie: '<circle cx="12" cy="12" r="9"/><path d="M8.5 9h.01M14 8h.01M15.5 13.5h.01M10 15h.01"/>'
 };
 function icon(name, size) {
@@ -1896,6 +1946,36 @@ function macroRow(label, used, goal) {
     <div class="mac-top"><span>${label}</span><b>${Math.round(used)}<small> / ${goal} g</small></b></div>
     <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
   </div>`;
+}
+function alcoholCard(inner) {
+  const T = t();
+  const dr = drinksOf();
+  const tot = drinkTotals();
+  const limit = S.sex === "female" ? 1 : 2; // CDC "moderate": up to 1 (women) or 2 (men) drinks a day
+  const preg = (S.health || []).includes("pregnant");
+  const week = last7().reduce((a, x) => a + drinkTotals(S.logs[x.key] || {}).std, 0);
+  const fmt = n => (Math.round(n * 10) / 10).toLocaleString();
+  return `<section class="${inner ? "" : "card "}alc" aria-labelledby="alcT">
+    <div class="row" style="align-items:center">
+      <h2 id="alcT" class="${inner ? "tiny" : "sec-title"}">${icon("glass", 20)} ${T.alcohol}</h2>
+      <span class="muted">${tot.kcal} kcal</span>
+    </div>
+    ${DRINKS.map(x => `<div class="drow">
+      <div class="dtxt"><b>${T["dr_" + x.id]}</b><small>${x.ml} ml · ${x.kcal} kcal</small></div>
+      <button class="round ghost" data-undrink="${x.id}" ${dr[x.id] ? "" : "disabled"} aria-label="${T.remove} ${T["dr_" + x.id]}">−</button>
+      <b class="dcount" aria-live="polite">${fmt(dr[x.id] || 0)}</b>
+      <button class="round" data-drink="${x.id}" aria-label="${T.addWater} ${T["dr_" + x.id]}">${icon("plus", 18)}</button>
+    </div>`).join("")}
+    <label class="tiny" for="drinkMl" style="display:block;margin-top:12px">${T.otherAmount}</label>
+    <select id="drinkType" aria-label="${T.alcohol}" style="margin-top:6px">${DRINKS.map(x => `<option value="${x.id}">${T["dr_" + x.id]}</option>`).join("")}</select>
+    <div class="alc-add">
+      <input id="drinkMl" type="number" inputmode="numeric" placeholder="ml" aria-label="ml">
+      <button class="btn ghost" id="addDrink">${T.add}</button>
+    </div>
+    ${tot.n ? `<div class="alc-sum">${fmt(tot.std)} ${T.stdDrinks} · ${tot.grams} g ${T.ofAlcohol} · ${T.thisWeek}: ${fmt(week)}</div>` : ""}
+    ${preg && tot.n ? `<div class="warn">${T.alcPreg}</div>`
+      : tot.std > limit ? `<div class="warn">${T.alcOver.replace("{n}", limit)}</div>` : ""}
+  </section>`;
 }
 function home() {
   const T=t(); const tg=targets(); const used=usedCals();
@@ -1966,8 +2046,10 @@ function home() {
       <button class="round" data-water="${step}" aria-label="${T.addWater} ${us ? "8 " + T.oz : "250 " + T.ml}">${icon("plus", 20)}</button>
     </section>
 
+    ${S.drink && S.drink !== "no" ? alcoholCard() : ""}
+
     <details class="card more-log">
-      <summary>${T.moreLogs}</summary>
+      <summary>${S.drink === "no" ? T.moreLogs : T.steps}</summary>
       <div class="tiny" style="margin-top:12px">${T.steps}</div>
       <div class="row" style="align-items:baseline;justify-content:flex-start;gap:8px"><b style="font-size:22px">${(d.steps||0).toLocaleString()}</b><span class="muted">${todayBurn()} kcal</span></div>
       <div class="chips" style="margin-top:6px">
@@ -1975,13 +2057,7 @@ function home() {
         <button class="chip" data-steps="2500">+ 2,500</button>
         <button class="chip" id="walkBtn">${S.walkOn ? T.walkStop : T.walkNow}</button>
       </div>
-      <div class="tiny" style="margin-top:16px">${T.beer}</div>
-      <div class="row" style="align-items:baseline;justify-content:flex-start;gap:8px"><b style="font-size:22px">${(d.cans||0)+(d.bottles||0)}</b><span class="muted">${beerCals()} kcal</span></div>
-      <div class="chips" style="margin-top:6px">
-        <button class="chip" data-beer="cans">+ ${T.can}</button>
-        <button class="chip" data-beer="bottles">+ ${T.bottle}</button>
-        <button class="chip" data-beer="undo" aria-label="${T.undo}">−</button>
-      </div>
+      ${!S.drink || S.drink === "no" ? `<div style="margin-top:16px">${alcoholCard(true)}</div>` : ""}
     </details>
 
     ${tip && S.tipDismissed !== today() ? `<aside class="card tip">
@@ -2813,17 +2889,19 @@ function bind() {
   const scanResult = document.getElementById("scanResult");
   if (scanResult && S.scrollResult) { S.scrollResult = false; scanResult.scrollIntoView({ block: "start", behavior: "smooth" }); }
   if (S.tab !== "scan" || (S.scanMode || "code") !== "code") { stopScanCam(); if (S.tab !== "scan") window._saboriaCamTried = false; }
-  document.querySelectorAll("[data-beer]").forEach(b => b.onclick = () => {
-    const d = day();
-    d.cans = d.cans || 0; d.bottles = d.bottles || 0;
-    if (b.dataset.beer === "cans") d.cans += 1;
-    else if (b.dataset.beer === "bottles") d.bottles += 1;
-    else {
-      if (d.bottles) d.bottles -= 1;
-      else if (d.cans) d.cans -= 1;
-    }
-    persist();
+  document.querySelectorAll("[data-drink]").forEach(b => b.onclick = () => {
+    const dr = drinksOf(); dr[b.dataset.drink] = (dr[b.dataset.drink] || 0) + 1; persist();
   });
+  document.querySelectorAll("[data-undrink]").forEach(b => b.onclick = () => {
+    const dr = drinksOf(); dr[b.dataset.undrink] = Math.max(0, Math.round(((dr[b.dataset.undrink] || 0) - 1) * 10) / 10); persist();
+  });
+  const addDrink = document.getElementById("addDrink");
+  if (addDrink) addDrink.onclick = () => {
+    const type = DRINKS.find(x => x.id === document.getElementById("drinkType").value);
+    const ml = Math.max(0, Number(document.getElementById("drinkMl").value) || 0);
+    if (!type || !ml || ml > 5000) return;
+    const dr = drinksOf(); dr[type.id] = Math.round(((dr[type.id] || 0) + ml / type.ml) * 10) / 10; persist();
+  };
   document.querySelectorAll("[data-water]").forEach(b => b.onclick = () => {
     day().water += Number(b.dataset.water);
     helperSay("happy", "happyWater");
